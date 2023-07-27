@@ -127,7 +127,7 @@ public class ProfilerController {
     }
 
     private Optional<ProfilerInfoVo> getAnalyzedProxyForProfiler(String profilerId) {
-        List<String> proxyWebSocketUrls = proxyService.getAllProxyUrls();
+        List<String> proxyWebSocketUrls = proxyService.getAllProxyUrlsFromRegister();
         for (String proxyWebSocketUrl : proxyWebSocketUrls) {
             Optional<ProxyInfo> proxyRef = ProxyInfoParser.parseProxyInfo(proxyWebSocketUrl);
             if (!proxyRef.isPresent()) {

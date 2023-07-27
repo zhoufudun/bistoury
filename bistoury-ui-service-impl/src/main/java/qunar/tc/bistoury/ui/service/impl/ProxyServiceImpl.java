@@ -70,10 +70,19 @@ public class ProxyServiceImpl implements ProxyService {
         DynamicConfigLoader.<LocalDynamicConfig>load("config.properties").addListener(conf -> proxyAgent = conf.getString("agent.proxy"));
     }
 
+    /**
+     * 从zk中获取proxy列表信息
+     *
+     * @return
+     */
     @Override
-    public List<String> getAllProxyUrls() {
+    public List<String> getAllProxyUrlsFromRegister() {
         try {
-            return zkClient.getChildren(registryStore.getProxyZkPathForNewUi());
+            String proxyZkPathForNewUi = registryStore.getProxyZkPathForNewUi();
+            logger.info("getAllProxyUrls from local="+proxyZkPathForNewUi);
+            List<String> children = zkClient.getChildren(proxyZkPathForNewUi);
+            logger.info("get children from zk="+children);
+            return children;
         } catch (Exception e) {
             logger.error("get all proxy server address error", e);
             return ImmutableList.of();
@@ -84,18 +93,18 @@ public class ProxyServiceImpl implements ProxyService {
     @Override
     public List<String> getWebSocketUrl(final String agentIp) {
         List<String> result = Lists.newArrayList();
-        doGetWebSocketUrl(result, getAllProxyUrls(), agentIp);
+        doGetWebSocketUrl(result, getAllProxyUrlsFromRegister(), agentIp);
         return result;
     }
 
     @Override
     public Optional<ProxyInfo> getNewProxyInfo(String agentIp) {
-        for (String proxyWebSocketUrl : getAllProxyUrls()) {
+        for (String proxyWebSocketUrl : getAllProxyUrlsFromRegister()) {
             final Optional<ProxyInfo> proxyInfoRef = ProxyInfoParser.parseProxyInfo(proxyWebSocketUrl);
 
             if (proxyInfoRef.isPresent()) {
                 String url = buildProxyAgentUrl(proxyInfoRef.get());
-                if (existAgent(url, agentIp)) {
+                if (ifExistAgentOnSpecifiedProxy(url, agentIp)) {
                     return proxyInfoRef;
                 }
             }
@@ -103,20 +112,38 @@ public class ProxyServiceImpl implements ProxyService {
         return Optional.empty();
     }
 
+    /**
+     *
+     * @param result
+     * @param proxyWebSocketUrls 注册中心保存的proxy集群列表
+     * @param agentIp
+     */
     private void doGetWebSocketUrl(List<String> result, List<String> proxyWebSocketUrls, final String agentIp) {
         for (String proxyWebSocketUrl : proxyWebSocketUrls) {
+            /**
+             * 解析注册中心（zk）的数据
+             */
             Optional<ProxyInfo> optional = ProxyInfoParser.parseProxyInfo(proxyWebSocketUrl);
             if (!optional.isPresent()) {
                 continue;
             }
+            logger.info("proxyWebSocketUrl="+proxyWebSocketUrl+", optional="+optional.get().toString());
             ProxyInfo proxyInfo = optional.get();
             String url = buildProxyAgentUrl(proxyInfo);
-            if (existAgent(url, agentIp)) {
+            // 循环遍历每一个proxy，查询执行的agent是否在某一个proxy下
+            if (ifExistAgentOnSpecifiedProxy(url, agentIp)) {
                 result.add(buildWebsocketUrl(proxyInfo));
             }
         }
+        logger.info("getProxyWebSocketUrl success, proxy service provider ws protocol for ui ws url="+result);
     }
 
+    /**
+     * 构建ws协议的url，ui的指令通过ws协议发给agent所注册的proxy，proxy在将指令下发给agent
+     * 举例：ws://10.2.40.18:9881/ws
+     * @param proxyInfo
+     * @return
+     */
     private String buildWebsocketUrl(ProxyInfo proxyInfo) {
         return SCHEMA + proxyInfo.getIp() + COLON + proxyInfo.getWebsocketPort() + PATH;
     }
@@ -125,10 +152,18 @@ public class ProxyServiceImpl implements ProxyService {
         return String.format(proxyAgent, proxyInfo.getIp(), proxyInfo.getTomcatPort());
     }
 
-    private boolean existAgent(String url, @RequestParam String agentIp) {
+    /**
+     * 判断指定的agentIp是否挂在指定的proxy节点下
+     *
+     * @param url
+     * @param agentIp
+     * @return
+     */
+    private boolean ifExistAgentOnSpecifiedProxy(String url, @RequestParam String agentIp) {
         try {
             AsyncHttpClient.BoundRequestBuilder builder = httpClient.prepareGet(url);
             builder.addQueryParam("ip", agentIp);
+            logger.info("ui query agent from proxy, proxy url="+url+"?ip="+agentIp);
             Response response = httpClient.executeRequest(builder.build()).get();
             if (response.getStatusCode() == 200) {
                 ApiResult<AgentInfo> result = JacksonSerializer.deSerialize(response.getResponseBody("utf8"), AGENT_TYPE_REFERENCE);

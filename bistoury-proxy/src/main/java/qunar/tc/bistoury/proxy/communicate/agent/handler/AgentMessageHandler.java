@@ -43,6 +43,18 @@ public class AgentMessageHandler extends SimpleChannelInboundHandler<Datagram> {
         for (AgentMessageProcessor processor : processors) {
             for (int code: processor.codes()) {
                 builder.put(code, processor);
+                /**
+                 * AgentMessageHandler init code=1, processor=[1]
+                 * AgentMessageHandler init code=504, processor=[504, 505, 507, 506]
+                 * AgentMessageHandler init code=505, processor=[504, 505, 507, 506]
+                 * AgentMessageHandler init code=507, processor=[504, 505, 507, 506]
+                 * AgentMessageHandler init code=506, processor=[504, 505, 507, 506]
+                 * AgentMessageHandler init code=-2, processor=[-2, -1, -3]
+                 * AgentMessageHandler init code=-1, processor=[-2, -1, -3]
+                 * AgentMessageHandler init code=-3, processor=[-2, -1, -3]
+                 * AgentMessageHandler init code=0, processor=[0]
+                 */
+                logger.info("AgentMessageHandler init code={}, processor={}",code,processor.codes());
             }
         }
         processorMap = builder.build();
@@ -51,12 +63,14 @@ public class AgentMessageHandler extends SimpleChannelInboundHandler<Datagram> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Datagram message) throws Exception {
         int code = message.getHeader().getCode();
+        logger.info("proxy receive agent request, code={}, connect with agent={}",code,ctx.channel().toString());
         AgentMessageProcessor messageProcessor = processorMap.get(code);
         if (messageProcessor == null) {
             message.release();
             logger.warn("can not process message code [{}], {}", code, ctx.channel());
             return;
         }
+        logger.info("proxy trigger channelRead0, messageProcessor name={}",messageProcessor.getClass().getCanonicalName());
 
         messageProcessor.process(ctx, message);
     }

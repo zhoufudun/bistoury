@@ -98,7 +98,9 @@ public class QBuiltinCommandPack extends BuiltinCommandPack {
         commands.add(Command.create(LoggerCommand.class));
         commands.add(Command.create(QStopCommand.class));
 
-        // qunar command
+//        以上是arthas原生支持的指令
+
+        // qunar command: 以下是bistoury框架自定义的command
         commands.add(Command.create(AgentInfoCommand.class));
 
         commands.add(Command.create(QDebugAddCommand.class));

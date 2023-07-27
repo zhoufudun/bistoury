@@ -11,6 +11,7 @@
     <logger name="java.sql" level="INFO"/>
     <logger name="org.apache.zookeeper" level="INFO"/>
     <logger name="org.mybatis" level="INFO"/>
+    <logger name="qunar.tc.bistoury.ui" level="INFO"/>
 
     <root level="INFO">
         <appender-ref ref="console"/>

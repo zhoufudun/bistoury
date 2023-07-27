@@ -24,6 +24,9 @@ import java.util.Map;
 
 /**
  * @author zhenyu.nie created on 2018 2018/11/9 11:27
+ *
+ * 注册中心配置信息
+ *
  */
 public class RegistryStore {
 

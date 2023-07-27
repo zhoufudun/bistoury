@@ -43,12 +43,16 @@ public class ArthasStarter {
         String libDirPath = System.getProperty("bistoury.lib.dir");
         File libDir;
         if (Strings.isNullOrEmpty(libDirPath)) {
+//            Configure类所在的包路径
             libDir = new File(Configure.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile();
         } else {
             libDir = new File(libDirPath);
         }
+        logger.info("ArthasStarter static code, libDir={}",libDir);
         DEFAULT_AGENT_JAR_PATH = new File(libDir, "bistoury-instrument-agent.jar").getPath();
         DEFAULT_CORE_JAR_PATH = new File(libDir, "arthas-core.jar").getPath();
+        logger.info("ArthasStarter static code, DEFAULT_AGENT_JAR_PATH={}",DEFAULT_AGENT_JAR_PATH);
+        logger.info("ArthasStarter static code, DEFAULT_CORE_JAR_PATH={}",DEFAULT_CORE_JAR_PATH);
     }
 
     public synchronized static void start(int pid) throws Exception {
@@ -85,17 +89,24 @@ public class ArthasStarter {
                 }
             }
 
-            String arthasAgent = configure.getArthasAgent();
-            File agentFile = new File(arthasAgent);
-            String name = agentFile.getName();
-            String prefix = name.substring(0, name.indexOf('.'));
-            File dir = agentFile.getParentFile();
+            String arthasAgent = configure.getArthasAgent(); // D:\maven\repository\com\taobao\arthas\arthas-core\3.1.4\bistoury-instrument-agent.jar
+            File agentFile = new File(arthasAgent); // D:\maven\repository\com\taobao\arthas\arthas-core\3.1.4\bistoury-instrument-agent.jar
+            String name = agentFile.getName(); // bistoury-instrument-agent.jar
+            String prefix = name.substring(0, name.indexOf('.'));//bistoury-instrument-agent
+            File dir = agentFile.getParentFile(); // D:\maven\repository\com\taobao\arthas\arthas-core\3.1.4
+            logger.info("ArthasStarter.attachAgent dir={} prefix={}",dir.getAbsolutePath(),prefix);
             File realAgentFile = getFileWithPrefix(dir, prefix);
 
-            logger.info("start load arthas agent, input {}, load {}", arthasAgent, realAgentFile.getCanonicalPath());
+            logger.info("start load arthas agent, arthasAgent {}, realAgentFile {}", arthasAgent, realAgentFile.getCanonicalPath());
             final String delimiter = "$|$";
-            virtualMachine.loadAgent(realAgentFile.getCanonicalPath(),
-                    configure.getArthasCore() + delimiter + ";;" + configure.toString() + delimiter + System.getProperty("bistoury.app.lib.class"));
+            /**
+             * System.getProperty("bistoury.app.lib.class") 是为了获取用户进程（需要诊断问题的java用户进程）所有的jar包所在路路径
+             */
+            String args = configure.getArthasCore() + delimiter + ";;" + configure.toString() + delimiter + System.getProperty("bistoury.app.lib.class");
+            logger.info("begin loadAgent, realAgentFile={}, second args {}", realAgentFile.getCanonicalPath(), args);
+            virtualMachine.loadAgent(realAgentFile.getCanonicalPath(),args);
+//            virtualMachine.loadAgent("D:\\code\\study-demo\\target\\agent-shade.jar");
+            // D:\code\arthas-zfd-3.6.9\packaging\target\arthas-3.1.4-bin\arthas-agent.jar
         } finally {
             if (virtualMachine != null) {
                 virtualMachine.detach();
@@ -120,6 +131,12 @@ public class ArthasStarter {
         String agentJar = System.getProperty("bistoury.agent.jar.path", DEFAULT_AGENT_JAR_PATH);
         String coreJar = System.getProperty("bistoury.arthas.core.jar.path", DEFAULT_CORE_JAR_PATH);
 
+        String property = System.getProperty("os.name");
+        if(property.startsWith("Window")){
+            // window平台下调试，需要指定用户进程的lib位置, 参数内容根据自己的用户进程自己设置
+            System.setProperty("bistoury.app.lib.class", "com.example.webdemo.WebdemoApplication");
+        }
+
         Configure configure = new Configure();
         configure.setJavaPid(pid);
         configure.setArthasAgent(agentJar);
@@ -127,6 +144,8 @@ public class ArthasStarter {
         configure.setIp(TelnetConstants.TELNET_CONNECTION_IP);
         configure.setTelnetPort(TelnetConstants.TELNET_CONNECTION_PORT);
         configure.setHttpPort(TelnetConstants.DEFAULT_HTTP_PORT);
+        logger.info("Configure, pid={}, arthasAgent={}, arthasCore={}. telentIp={}, telentPort={}. httpPort={}",
+                configure.getJavaPid(),configure.getArthasAgent(),configure.getArthasCore(),configure.getIp(),configure.getTelnetPort(),configure.getHttpPort());
         return configure;
     }
 }

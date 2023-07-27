@@ -24,6 +24,8 @@ import java.util.Objects;
 
 /**
  * @author zhenyu.nie created on 2019 2019/5/13 19:45
+ *
+ * 一个agent客户端对应一个DefaultAgentConnection
  */
 public class DefaultAgentConnection extends AbstractConnection implements AgentConnection {
 

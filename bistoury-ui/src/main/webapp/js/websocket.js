@@ -15,6 +15,8 @@
             console.log("请选择机器");
         }
 
+        console.log("machine="+machine+", type="+type+", oldCommand="+oldCommand+", newCommand="+newCommand+", stopFunc="+stopFunc);
+
         bistouryWS.proxy = {};
 
         var agentIp = machine.ip;
@@ -55,9 +57,9 @@
             success: function (ret) {
                 //status 为100是new proxy,0是old proxy
                 if (ret.status === 0 || ret.status === 100) {
-                    var proxyUrl = ret.data;
+                    var proxyUrl = ret.data; // {"status":100,"message":"new proxy","data":"ws://10.2.40.18:9881/ws"}
                     bistouryWS.proxy[agentIp] = ret.status === 100;
-                    doGetWs(deferred, proxyUrl, host, stopFunc, handleResultFunc);
+                    doGetWs(deferred, proxyUrl, host, stopFunc, handleResultFunc); //向proxyUrl发起ws请求
                 } else {
                     console.log(ret.message);
                     callBack(stopFunc);

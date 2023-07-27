@@ -84,7 +84,7 @@ class AgentNettyClient {
                 new MetaRefreshTipProcessor(),
                 taskProcessor));
 
-        final ConnectionManagerHandler connectionManagerHandler = new ConnectionManagerHandler(jobStore);
+        final ConnectionManagerHandler connectionManagerHandler = new ConnectionManagerHandler(jobStore); // DefaultResponseJobStore
 
         bootstrap.group(workGroup)
                 .channel(NioSocketChannel.class)
@@ -95,14 +95,20 @@ class AgentNettyClient {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
                         socketChannel.pipeline()
-                                .addLast("encoder", new AgentEncoder())
-                                .addLast("decoder", new AgentDecoder())
-                                .addLast("idle", idleStateHandler)
-                                .addLast(requestHandler)
-                                .addLast(connectionManagerHandler);
+                                .addLast("encoder", new AgentEncoder()) // 编码
+                                .addLast("decoder", new AgentDecoder()) // 解码
+                                .addLast("idle", idleStateHandler) // 空闲处理
+                                .addLast(requestHandler)  // 处理请求
+                                .addLast(connectionManagerHandler); // 连接管理
                     }
                 });
         bootstrap.connect(proxyConfig.getIp(), proxyConfig.getPort()).addListener(new ChannelFutureListener() {
+            /**
+             * 和服务端建立连接成功后的回调
+             *
+             * @param future
+             * @throws Exception
+             */
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
@@ -148,7 +154,7 @@ class AgentNettyClient {
     @ChannelHandler.Sharable
     private class ConnectionManagerHandler extends ChannelDuplexHandler {
 
-        private final ResponseJobStore jobStore;
+        private final ResponseJobStore jobStore; // 存储需要应答的任务
 
         private ConnectionManagerHandler(ResponseJobStore jobStore) {
             this.jobStore = jobStore;
@@ -178,7 +184,7 @@ class AgentNettyClient {
         public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
             if (evt instanceof IdleStateEvent) {
                 logger.warn("agent netty client idle, {}", ctx.channel());
-                destroyAndSync();
+                destroyAndSync(); // 客户端空闲，服务端直接关闭连接
             } else {
                 super.userEventTriggered(ctx, evt);
             }
@@ -194,7 +200,12 @@ class AgentNettyClient {
         public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
             boolean writable = channel.isWritable();
             logger.info("agent writability changed to {}", writable);
-            jobStore.setWritable(writable);
+            /**
+             * 当Channel 的可写状态发生改变时被调用。可以通过调用Channel 的isWritable()方法来检测Channel 的可写性。
+             * 与可写性相关的阈值可以通过Channel.config().setWriteHighWaterMark()和Channel.config().setWriteLowWaterMark()方法来设置
+             * 原文链接：https://blog.csdn.net/weixin_44367006/article/details/100081620
+             */
+            jobStore.setWritable(writable); // netty的buf可写，jobStore中的任务才可执行
             super.channelWritabilityChanged(ctx);
         }
     }

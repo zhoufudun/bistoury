@@ -45,16 +45,16 @@ public class RequestDecoder extends MessageToMessageDecoder<WebSocketFrame> {
     public RequestDecoder(RequestEncryption encryption) {
         this.encryption = encryption;
     }
-
+    // 将WebSocketFrame转化为RequestData
     @Override
     protected void decode(ChannelHandlerContext ctx, WebSocketFrame msg, List<Object> out) throws Exception {
-        RequestData<String> data = parse(msg);
+        RequestData<String> data = parse(msg); // Request{app='bistoury_demo_app', type=10, agentServerInfos=null, command='', token='5a9f3556960290d9a62fdba1a1255b9b', user='admin'}
         if (data != null) {
             //code转换，将老agent的code转换为新agent能识别的code
             Optional<CommandCode> optional = CommandCode.valueOfOldCode(data.getType());
             if (optional.isPresent()) {
                 data.setType(optional.get().getCode());
-                out.add(data);
+                out.add(data); // WebSocketFrame转为RequestData消息后, 传递给下一个handler，下一个handler能直接获取RequestData兑现
             } else {
                 ctx.writeAndFlush(UiResponses.createWrongFrameResponse());
             }
@@ -65,7 +65,7 @@ public class RequestDecoder extends MessageToMessageDecoder<WebSocketFrame> {
 
     private RequestData<String> parse(WebSocketFrame msg) throws IOException {
         if (msg instanceof TextWebSocketFrame) {
-            String text = ((TextWebSocketFrame) msg).text();
+            String text = ((TextWebSocketFrame) msg).text(); // demo:   {"0":"rWyLwiZBc4ew63Ck79Sr0crZ3P5YRuyFZgnMfJA0esg3ZjeR2zLAFYQUIcF+26c55e1ATc3q6qSDhwXrLE2IEIyrJdMA0iBFQ8gXJmtJ7Y8U7ZsdavGqH1Nyf+XCJxcpgHjO1sQiEXkrmCtqJifaoncehJV+p5vIjDaAOTn8iHk=","1":"Sz4A8LYtvz4y7zSHqd2TXuELgu/bC+dVErh+NCGB74YbMaV7o1ZhF3ork+SjOXetWhzBBNwXIXw8Oso+AyHR28q6/KkBSH1vUVsSTgXfvwlOqFy2X5vLyhk0zXMh+l9gFRI3aEcNXE6M3sVGYHA4y9J76d8wgA0MRgBpXmTXXYPC/DTsqL7Myw=="}
             return encryption.decrypt(text);
         } else if (msg instanceof BinaryWebSocketFrame) {
             ByteBuf content = msg.content();

@@ -49,13 +49,19 @@ class Configs {
         return getProxyConfig(bistouryProxyHost);
     }
 
-
+    /**
+     * 向指定的proxy心中发起请求，获取与proxy通信的ip和端口信息
+     *
+     * @param bistouryHost
+     * @return
+     */
     private static ProxyConfig getProxyConfig(String bistouryHost) {
         String url = "http://" + bistouryHost + PROXY_URI;
         try {
             AsyncHttpClient client = AsyncHttpClientHolder.getInstance();
             AsyncHttpClient.BoundRequestBuilder builder = client.prepareGet(url);
             builder.setHeader("content-type", "application/json;charset=utf-8");
+            logger.info("getProxyConfig from proxy, url="+url);
             Response response = client.executeRequest(builder.build()).get();
             if (response.getStatusCode() != 200) {
                 logger.error("get proxy config error, http code [{}], url [{}]", response.getStatusCode(), url);
@@ -67,7 +73,7 @@ class Configs {
                 logger.error("get proxy config error, status code [{}], url [{}]", result.getStatus(), url);
                 return null;
             }
-
+            logger.info("getProxyConfig from proxy finished, result="+result.getData().toString() );
             return result.getData();
         } catch (Throwable e) {
             logger.error("get proxy config error, url [{}]", url, e);

@@ -47,10 +47,16 @@ public class AgentMetaRefreshNotifyController {
     @Autowired
     private AgentInfoManager agentInfoManager;
 
+    /**
+     * 接口给谁提供的呢？？
+     * @param req
+     * @return
+     */
     @RequestMapping("/proxy/agent/metaRefresh")
     @ResponseBody
     public ApiResult agentMetaRefresh(HttpServletRequest req) {
         try {
+            logger.info("agentMetaRefresh url={}",req.getPathInfo());
             List<String> agentIds = JacksonSerializer.deSerialize(req.getInputStream(), TYPE_REFERENCE);
             agentInfoManager.updateAgentInfo(agentIds);
             return ResultHelper.success();

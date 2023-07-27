@@ -1,7 +1,5 @@
 package qunar.tc.bistoury.ui.container;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 
 /**
@@ -15,7 +13,7 @@ public class UiBootstrapForTest {
 		String bistouryConfPath = UiBootstrapForTest.class.getResource("/conf").getPath().toString();
 		System.setProperty("bistoury.conf", bistouryConfPath);
 		try {
-			Bootstrap.main(new String[]{});
+			UIBootstrapMain.main(new String[]{});
 		}
 		catch (Exception e) {
 			e.printStackTrace();

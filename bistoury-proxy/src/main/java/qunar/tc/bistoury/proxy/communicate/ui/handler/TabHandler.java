@@ -45,7 +45,7 @@ public class TabHandler extends ChannelDuplexHandler {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         RequestData<String> data = (RequestData<String>) msg;
         if (data.getType() != CommandCode.REQ_TYPE_TAB.getCode()) {
-            ctx.fireChannelRead(msg);
+            ctx.fireChannelRead(msg); // 不是tab，直接传递给下一个handler
             return;
         }
         try {

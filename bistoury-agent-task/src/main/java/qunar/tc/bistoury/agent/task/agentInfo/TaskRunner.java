@@ -71,7 +71,7 @@ public class TaskRunner implements Runnable {
 
     @Override
     public void run() {
-        Telnet telnet = tryGetTelnet();
+        Telnet telnet = tryGetTelnet(); // ????????
         if (telnet != null) {
             try {
                 Map<String, String> info = META_STORE.getAgentInfo();

@@ -37,6 +37,14 @@ import java.util.List;
 public class WebSocketEncoder extends MessageToMessageEncoder<Datagram> {
     private static final int BODY_LEN = 4;
 
+    /**
+     * Datagram转为BinaryWebSocketFrame
+     *
+     * @param ctx
+     * @param msg
+     * @param out
+     * @throws Exception
+     */
     @Override
     protected void encode(ChannelHandlerContext ctx, Datagram msg, List<Object> out) throws Exception {
         ByteBuf result = ctx.alloc().buffer();

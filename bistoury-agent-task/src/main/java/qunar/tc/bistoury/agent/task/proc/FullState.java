@@ -27,9 +27,9 @@ import java.util.Map;
  */
 public class FullState {
 
-    public final CpuState cpuState;
-    public final ProcessState processState;
-    public final Map<Integer, ThreadState> threadInfo;
+    public final CpuState cpuState; // 总体cpu情况
+    public final ProcessState processState; // 指定进程情况
+    public final Map<Integer, ThreadState> threadInfo; // 指定进程中总体线程情况
 
     public FullState(CpuState cpuState, ProcessState processState, Map<Integer, ThreadState> threadInfo) {
         this.cpuState = cpuState;

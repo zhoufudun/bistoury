@@ -1,5 +1,9 @@
 package qunar.tc.bistoury.common.profiler.compact;
 
+/**
+ * trie
+ * 前缀树
+ */
 public class Trie {
 
     private TrieNode root;

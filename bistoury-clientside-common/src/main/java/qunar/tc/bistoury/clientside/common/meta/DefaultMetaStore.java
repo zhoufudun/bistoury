@@ -24,6 +24,8 @@ import java.util.Map;
 
 /**
  * @author zhenyu.nie created on 2019 2019/1/10 16:18
+ *
+ * 客户端存储元数据
  */
 public class DefaultMetaStore implements MetaStore {
 

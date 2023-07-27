@@ -41,7 +41,7 @@ public abstract class AbstractConnection implements Connection {
     }
 
     public void init() {
-        channel.closeFuture().addListener((f) -> closeFuture.set(null));
+        channel.closeFuture().addListener((f) -> closeFuture.set(null)); // 添加agent连接关闭回调
     }
 
     @Override

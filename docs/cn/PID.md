@@ -13,11 +13,11 @@ pid获取类：`qunar.tc.bistoury.agent.common.pid.PidUtils`
 该方法可以动态获取pid，应用重启不需要重启agent，以下是`jps -l`命令执行结果
 ```bash
 28499 org.h2.tools.Server
-28533 qunar.tc.bistoury.ui.container.Bootstrap
+28533 qunar.tc.bistoury.ui.container.UIBootstrapMain
 28522 qunar.tc.bistoury.indpendent.agent.Main
 28330 org.jetbrains.jps.cmdline.Launcher
 28331 qunar.tc.githubtest.GithubTestApplication
-28510 qunar.tc.bistoury.proxy.container.Bootstrap
+28510 qunar.tc.bistoury.proxy.container.ProxyBootstrapMain
 28655 sun.tools.jps.Jps
 ```
 在agent启动时需要在bistoury-agent-bin/conf/bistoury-agent-env.sh中自行配置系统参数`bistoury.pid.handler.jps.symbol.class`，这个的值为`jps -l`执行结果的第二列，即上面执行结果的`qunar.tc.githubtest.GithubTestApplication`等，默认值为`org.apache.catalina.startup.Bootstrap`

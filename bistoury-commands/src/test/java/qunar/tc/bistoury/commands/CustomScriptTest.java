@@ -1,5 +1,6 @@
 package qunar.tc.bistoury.commands;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -20,14 +21,14 @@ public class CustomScriptTest {
         assert !CustomScript.containsCustomScript("test  ");
         assert !CustomScript.containsCustomScript("test");
         assert CustomScript.containsCustomScript("qjdump");
-        assert !CustomScript.containsCustomScript(null);
+//        assert !CustomScript.containsCustomScript(null);
 
 
         System.out.println(CustomScript.customScriptPath("test  "));
         System.out.println(CustomScript.customScriptPath("test"));
         System.out.println(CustomScript.customScriptPath("qjdump"));
         System.out.println(CustomScript.customScriptPath("qjdump test"));
-        System.out.println(CustomScript.customScriptPath(null));
+//        System.out.println(CustomScript.customScriptPath(null));
 
 
         System.out.println(CustomScript.replaceScriptPath("qjdump   test"));

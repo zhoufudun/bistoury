@@ -52,6 +52,11 @@ public class AgentInfoRefreshTask {
         this.refreshRequest = RemotingBuilder.buildAgentRequest(CommandCode.REQ_TYPE_REFRESH_AGENT_INFO.getCode(), null);
     }
 
+    /**
+     * agent 10 min 向proxy请求一次 元数据
+     * @param channel
+     * @param running
+     */
     public void start(final Channel channel, final AtomicBoolean running) {
         executor.submit(new Runnable() {
             @Override

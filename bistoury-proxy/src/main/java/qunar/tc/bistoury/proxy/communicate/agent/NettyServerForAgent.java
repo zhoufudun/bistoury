@@ -58,19 +58,22 @@ public class NettyServerForAgent implements NettyServer {
 
     private final int heartbeatTimeoutSec;
 
-    private final AgentMessageHandler agentMessageHandler;
+    private final AgentMessageHandler agentMessageHandler; // 专门处理agent的客户端信息
 
     private final int port;
 
     private volatile Channel channel;
 
     public NettyServerForAgent(Conf conf, AgentMessageHandler agentMessageHandler) {
-        int heartbeatSec = conf.getInt("heartbeatSec", 30);
-        this.heartbeatTimeoutSec = heartbeatSec * 2 + heartbeatSec / 2;
+        int heartbeatSec = conf.getInt("heartbeatSec", 30); // agent心跳间隔
+        this.heartbeatTimeoutSec = heartbeatSec * 2 + heartbeatSec / 2; // proxy认为agent超过2.5*30没有心跳就表示agent挂了
         this.agentMessageHandler = agentMessageHandler;
-        this.port = conf.getInt("agent.newport", -1);
+        this.port = conf.getInt("agent.newport", -1); // proxy和agent通信的netty端口
     }
 
+    /**
+     * 开启netty服务，接受agent客户端的请求
+     */
     @Override
     public void start() {
         ConnectionCounterHandler connectionCounterHandler = new ConnectionCounterHandler("agent");

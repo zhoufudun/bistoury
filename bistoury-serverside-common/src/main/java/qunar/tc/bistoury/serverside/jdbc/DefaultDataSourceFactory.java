@@ -12,6 +12,7 @@ public class DefaultDataSourceFactory implements DataSourceFactory {
 
 	@Override
 	public DataSource createDataSource(DynamicConfig dynamicConfig) {
+		System.out.println("=============");
 		org.apache.tomcat.jdbc.pool.DataSource dataSource = new org.apache.tomcat.jdbc.pool.DataSource();
 		dataSource.setDriverClassName(dynamicConfig.getString("jdbc.driverClassName", "com.mysql.jdbc.Driver"));
 		dataSource.setUrl(dynamicConfig.getString("jdbc.url"));
@@ -23,6 +24,7 @@ public class DefaultDataSourceFactory implements DataSourceFactory {
 		dataSource.setValidationQuery("select 1");
 		dataSource.setTestOnBorrow(true);
 		dataSource.setTestOnReturn(true);
+		System.out.println("22222222222");
 		return dataSource;
 	}
 }

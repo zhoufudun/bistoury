@@ -48,9 +48,10 @@ public class RequestHandler extends ChannelInboundHandlerAdapter {
         for (Processor<?> processor : processors) {
             for (Integer type : processor.types()) {
                 builder.put(type, processor);
+                logger.info("processorMap key={}, value={}",type,processor);
             }
         }
-        processorMap = builder.build();
+        processorMap = builder.build(); // 一共30个
     }
 
     @Override
@@ -70,16 +71,16 @@ public class RequestHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(final ChannelHandlerContext ctx, Object msg) throws Exception {
         final Datagram datagram = (Datagram) msg;
         RemotingHeader header = datagram.getHeader();
-        int code = header.getCode();
+        int code = header.getCode(); // 301
         String id = header.getId();
 
         if (code != ResponseCode.RESP_TYPE_HEARTBEAT.getCode()) {
             logger.info("agent receive request: id={}, sourceIp={}, code={}", id, ctx.channel().remoteAddress(), code);
         }
-        final ResponseHandler handler = NettyExecuteHandler.of(header, ctx);
+        final ResponseHandler handler = NettyExecuteHandler.of(header, ctx); // NettyExecuteHandler
         ctx.channel().attr(AgentConstants.attributeKey).set(id);
-
-        Processor processor = processorMap.get(code);
+        // processorMap中有一项为：{Integer@3074} 301 -> {TaskProcessor@2530}
+        Processor processor = processorMap.get(code); // TaskProcess
         if (processor == null) {
             handler.handleError(new IllegalArgumentException("unknown code [" + code + "]"));
             return;
@@ -94,7 +95,7 @@ public class RequestHandler extends ChannelInboundHandlerAdapter {
                 handler.handleEOF();
                 return;
             }
-            command = command.replace(BistouryConstants.FILL_PID, String.valueOf(pid));
+            command = command.replace(BistouryConstants.FILL_PID, String.valueOf(pid)); // command换成查询到的pid
         }
 
         Class<?> commandType = codeTypeMappingStore.getMappingType(code);

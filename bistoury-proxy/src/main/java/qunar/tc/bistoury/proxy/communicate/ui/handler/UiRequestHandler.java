@@ -92,6 +92,7 @@ public class UiRequestHandler extends ChannelDuplexHandler {
             return;
         }
 
+        logger.info("communicateCommand="+communicateCommand.get());
         Datagram response = communicateCommand.get().getProcessor().prepareResponse(datagram);
         super.write(ctx, response, promise);
     }
@@ -106,13 +107,13 @@ public class UiRequestHandler extends ChannelDuplexHandler {
         @SuppressWarnings("unchecked")
         RequestData<String> inputData = (RequestData<String>) msg;
 
-        UiConnection uiConnection = uiConnectionStore.register(ctx.channel());
+        UiConnection uiConnection = uiConnectionStore.register(ctx.channel()); // Request{app='bistoury_demo_app', type=301, agentServerInfos=[AgentServerInfo{agentId='10.2.40.18', host='10.2.40.18', ip='10.2.40.18', appcode='bistoury_demo_app', port=8081, logdir='/temp/webdemo/log'}], command='', token='5a9f3556960290d9a62fdba1a1255b9b', user='admin'}
 
         if (inputData.getType() == CommandCode.REQ_TYPE_CANCEL.getCode()) {
             cancelRequest(uiConnection);
             return;
         }
-
+        // 找到ui请求中的type在proxy中对应的CommunicateCommand实现类
         Optional<CommunicateCommand> command = commandStore.getCommunicateCommand(inputData.getType());
         if (!command.isPresent()) {
             ctx.channel().writeAndFlush(UiResponses.createNoCommandResponse(inputData));
@@ -124,7 +125,6 @@ public class UiRequestHandler extends ChannelDuplexHandler {
             ctx.channel().writeAndFlush(UiResponses.createNotSupportMultiResponse(inputData));
             return;
         }
-
         CommunicateCommandProcessor<?> processor = communicateCommand.getProcessor();
         Optional<? extends RequestData<?>> requestDataOptional = preProcessor(processor, inputData, ctx);
         if (!requestDataOptional.isPresent()) {
@@ -132,10 +132,15 @@ public class UiRequestHandler extends ChannelDuplexHandler {
         }
 
         RequestData<?> requestData = requestDataOptional.get();
+        logger.info("UiRequestHandler.channelRead requestData="+requestData);
         List<AgentConnection> agentConnections = Lists.newArrayListWithCapacity(requestData.getAgentServerInfos().size());
         List<String> lessVersionAgents = Lists.newArrayList();
         List<String> noConnectionAgents = Lists.newArrayList();
+
         for (AgentServerInfo agentServerInfo : requestData.getAgentServerInfos()) {
+            /**
+             * 根据前端ui传递来的AgentServerInfo来获取和agent的连接
+             */
             Optional<AgentConnection> agentConnection = agentConnectionStore.getConnection(agentServerInfo.getAgentId());
             if (agentConnection.isPresent()) {
                 if (agentConnection.get().getVersion() >= communicateCommand.getMinAgentVersion()) {

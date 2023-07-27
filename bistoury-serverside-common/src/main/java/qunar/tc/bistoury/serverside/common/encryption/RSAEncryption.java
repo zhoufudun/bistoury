@@ -19,6 +19,8 @@ package qunar.tc.bistoury.serverside.common.encryption;
 
 import com.google.common.base.Charsets;
 import com.ning.http.util.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
@@ -30,6 +32,7 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 
 public class RSAEncryption implements Encryption {
+    private static Logger logger = LoggerFactory.getLogger(RSAEncryption.class);
 
     private static final String ALGORITHM = "RSA";
 
@@ -64,6 +67,9 @@ public class RSAEncryption implements Encryption {
             cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
             byte[] bytes = source.getBytes(Charsets.UTF_8);
+            String encode = Base64.encode(cipher.doFinal(bytes));
+            logger.info("RSAEncryption.encrypt source={}",source);
+            logger.info("RSAEncryption.encrypt {}",encode);
             return Base64.encode(cipher.doFinal(bytes));
         } catch (Exception e) {
             throw new EncryptException(e);
@@ -76,7 +82,10 @@ public class RSAEncryption implements Encryption {
         try {
             cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
-            return new String(cipher.doFinal(Base64.decode(source)), Charsets.UTF_8);
+            String decrypt = new String(cipher.doFinal(Base64.decode(source)), Charsets.UTF_8);
+            logger.info("RSAEncryption.decrypt before source={}",source);
+            logger.info("RSAEncryption.decrypt after={}",decrypt);
+            return decrypt;
         } catch (Exception e) {
             throw new DecryptException(e);
         }

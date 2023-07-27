@@ -28,7 +28,7 @@ public class AppCenterServerFinder implements ServerFinder {
 
     private static final Logger logger = LoggerFactory.getLogger(AppCenterServerFinder.class);
 
-    private final AppServerService appServerService;
+    private final AppServerService appServerService; // 和数据库交互
 
     public AppCenterServerFinder(AppServerService appServerService) {
         this.appServerService = appServerService;

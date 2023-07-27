@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * @author leix.xie
  * @date 2019/7/2 15:14
- * @describe
+ * @describe  和数据库交互主键
  */
 @Service
 public class AppServerServiceImpl implements AppServerService {

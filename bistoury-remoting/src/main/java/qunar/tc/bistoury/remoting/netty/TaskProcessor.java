@@ -41,7 +41,7 @@ public class TaskProcessor implements Processor<Object> {
 
     private static final Logger logger = LoggerFactory.getLogger(TaskProcessor.class);
 
-    private final ResponseJobStore jobStore;
+    private final ResponseJobStore jobStore; // DefaultResponseJobStore
 
     private final TaskStore taskStore;
 
@@ -55,6 +55,7 @@ public class TaskProcessor implements Processor<Object> {
         for (TaskFactory<?> factory : taskFactories) {
             for (Integer type : factory.codes()) {
                 builder.put(type, factory);
+                logger.info("taskFactories key={},value={}",type,factory);
             }
         }
         this.taskFactories = builder.build();
@@ -68,25 +69,27 @@ public class TaskProcessor implements Processor<Object> {
     @Override
     public void process(RemotingHeader header, final Object command, final ResponseHandler handler) {
         try {
-            final int code = header.getCode();
+            final int code = header.getCode(); //301
             final String id = header.getId();
             final TaskFactory<?> factory = taskFactories.get(code);
             Preconditions.checkState(factory != null);
-            logger.info("receive {} command, id [{}], command [{}]", factory.name(), id, command);
+            logger.info("receive {} command, id [{}], command [{}], header.getCode()={}", factory.name(), id, command, code);
 
             RunnableTask task = createTask(factory, header, command, handler);
             if (task == null) {
                 return;
             }
 
-            ListenableFuture<Integer> future = task.execute();
+            ListenableFuture<Integer> future = task.execute(); // SettableFuture
+
+
             future.addListener(new Runnable() {
                 @Override
                 public void run() {
-                    taskStore.finish(id);
+                    taskStore.finish(id); // 任务完成，需要从缓存（taskStore）删除，，Future's computation is complete or, if the computation is already complete, immediately.
                 }
-            }, MoreExecutors.directExecutor());
-
+            }, MoreExecutors.directExecutor()); // 具体看：MoreExecutors.directExecutor() 线程池执行回调
+            // 本质上和上面的作用一致，两种写法
             Futures.addCallback(future, new FutureCallback<Integer>() {
                 @Override
                 public void onSuccess(Integer result) {
@@ -105,7 +108,7 @@ public class TaskProcessor implements Processor<Object> {
                     handler.handleError(t);
                     logger.error("{} command error, id [{}], command [{}]", factory.name(), id, command, t);
                 }
-            }, AgentRemotingExecutor.getExecutor());
+            }, AgentRemotingExecutor.getExecutor()); //  指定回调处理线程池
         } catch (Exception e) {
             handler.handleError(e);
             logger.error("task process error", e);

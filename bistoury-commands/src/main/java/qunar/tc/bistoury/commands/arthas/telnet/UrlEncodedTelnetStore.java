@@ -32,7 +32,7 @@ public class UrlEncodedTelnetStore extends AbstractTelnetStore {
         return INSTANCE;
     }
 
-    private UrlEncodedTelnetStore() {
+    UrlEncodedTelnetStore() {
 
     }
 

@@ -38,8 +38,8 @@ public class ProxyInfoParser {
             return Optional.empty();
         }
         final String ip = list.get(0);
-        final int tomcatPort = Integer.valueOf(list.get(1));
-        final int websocketPort = Integer.valueOf(list.get(2));
+        final int tomcatPort = Integer.valueOf(list.get(1));// zk下注册的节点信息为：bistoury/proxy/new/group/ui/10.2.40.18:9090:9881
+        final int websocketPort = Integer.valueOf(list.get(2));  // zk下注册的节点信息为：bistoury/proxy/new/group/ui/10.2.40.18:9090:9881
         return Optional.of(new ProxyInfo(ip, tomcatPort, websocketPort));
     }
 

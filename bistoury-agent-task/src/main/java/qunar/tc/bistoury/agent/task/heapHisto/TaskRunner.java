@@ -43,6 +43,9 @@ public class TaskRunner implements Runnable {
 
     private HeapHistoStore heapHistoStore = HeapHistoStore.getInstance();
 
+    /**
+     * 执行Heap，保存到sqlite、rockdb等k-v存储中间件
+     */
     @Override
     public void run() {
         boolean heapJMapHistoOn = agentConfig.isHeapHistoOn();

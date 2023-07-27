@@ -37,15 +37,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class LocalDynamicConfig implements DynamicConfig<LocalDynamicConfig> {
     private static final Logger LOG = LoggerFactory.getLogger(LocalDynamicConfig.class);
 
-    private final String name;
-    private final CopyOnWriteArrayList<Listener> listeners;
-    private volatile File file;
+    private final String name; // server.properties
+    private final CopyOnWriteArrayList<Listener> listeners; // 监听者
+    private volatile File file; // server.properties的具体文件句柄， D:\code\bistoury\bistoury-proxy\conf\server.properties
     private volatile boolean loaded = false;
-    private volatile Map<String, String> config;
+    private volatile Map<String, String> config; // server.properties文件具体的配置信息
 
-    private final String confDir;
+    private final String confDir; // server.properties文件所在的目录
 
-    private final boolean failOnNotExist;
+    private final boolean failOnNotExist; // 文件不存在是否抛异常
 
     LocalDynamicConfig(String name, boolean failOnNotExist) {
         this.failOnNotExist = failOnNotExist;
@@ -83,7 +83,7 @@ public class LocalDynamicConfig implements DynamicConfig<LocalDynamicConfig> {
         if (file == null) {
             return 0;
         } else {
-            return file.lastModified();
+            return file.lastModified(); // 如果文件有修改，lastModified会变更
         }
     }
 
@@ -92,8 +92,8 @@ public class LocalDynamicConfig implements DynamicConfig<LocalDynamicConfig> {
             return;
         }
         LOG.info("config {} has been modified", name);
-        loadConfig();
-        executeListeners();
+        loadConfig(); // 重新读取文件
+        executeListeners();// 执行用户定义的监听逻辑
         loaded = true;
     }
 

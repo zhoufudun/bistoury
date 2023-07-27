@@ -53,6 +53,10 @@ public class AsyncHttpClientHolder {
         INSTANCE.close();
     }
 
+    /**
+     * netty封装的异步httpclient客户端
+     * @return
+     */
     private static AsyncHttpClient initClient() {
         AsyncHttpClientConfig.Builder builder = new AsyncHttpClientConfig.Builder();
         builder.setConnectTimeout(CONN_TIMEOUT);

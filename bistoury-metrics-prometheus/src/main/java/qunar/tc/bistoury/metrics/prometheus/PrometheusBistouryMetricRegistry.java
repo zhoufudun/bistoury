@@ -79,7 +79,7 @@ public class PrometheusBistouryMetricRegistry implements BistouryMetricRegistry 
 
     @Override
     public void newGauge(String name, String[] tags, String[] values, Supplier<Double> supplier) {
-        final PrometheusBistouryGauge gauge = cacheFor(new GuageKey(name, tags));
+        final PrometheusBistouryGauge gauge = cacheFor(new GuageKey(name, tags)); // name=netty_connection_agent_active , tags=[]
         gauge.labels(values).setSupplier(supplier);
     }
 
@@ -113,8 +113,8 @@ public class PrometheusBistouryMetricRegistry implements BistouryMetricRegistry 
         final String[] tags;
 
         Key(String name, String[] tags) {
-            this.name = name;
-            this.tags = tags;
+            this.name = name; // netty_connection_agent_active
+            this.tags = tags; // []
         }
 
         @Override

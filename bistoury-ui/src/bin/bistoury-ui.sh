@@ -3,7 +3,7 @@ set -euo pipefail
 BISTOURY_BIN="${BASH_SOURCE-$0}"
 BISTOURY_BIN="$(dirname "$BISTOURY_BIN")"
 BISTOURY_BIN_DIR="$(cd "$BISTOURY_BIN"; pwd)"
-BISTOURY_MAIN="qunar.tc.bistoury.ui.container.Bootstrap"
+BISTOURY_MAIN="qunar.tc.bistoury.ui.container.UIBootstrapMain"
 
 . "$BISTOURY_BIN_DIR/base.sh"
 . "$BISTOURY_BIN_DIR/bistoury-ui-env.sh"

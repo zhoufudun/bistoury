@@ -43,7 +43,7 @@ public class DefaultAgentConnectionStore implements AgentConnectionStore {
         if (!Objects.equals(oldConnection, agentConnection)) {
             oldConnection = connections.put(agentId, agentConnection);
             agentConnection.init();
-            agentConnection.closeFuture().addListener(() -> connections.remove(agentId, agentConnection), MoreExecutors.directExecutor());
+            agentConnection.closeFuture().addListener(() -> connections.remove(agentId, agentConnection), MoreExecutors.directExecutor()); // 使用指定的线程池执行agent客户端关闭事件的回调函数
             if (oldConnection != null && !Objects.equals(oldConnection, agentConnection)) {
                 oldConnection.close();
             }

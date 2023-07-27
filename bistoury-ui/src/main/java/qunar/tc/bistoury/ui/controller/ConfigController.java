@@ -18,6 +18,8 @@
 package qunar.tc.bistoury.ui.controller;
 
 import com.google.common.base.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,9 +33,16 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * ui前端发送指令给
+ * ui后端，ui后端将指定发给proxy，proxy将指令发给agent
+ * 下发ui->proxy->agent
+ * 应答agent->proxy-ui
+ */
 @Controller
 @Component
 public class ConfigController {
+    private static Logger logger = LoggerFactory.getLogger(ConfigController.class);
 
     private static final Random random = new Random(System.currentTimeMillis());
 
@@ -51,6 +60,11 @@ public class ConfigController {
 
         if (!result.isEmpty()) {
             //status 为100是new proxy, 0是old proxy
+            /**
+             * 前端显示：{"status":100,"message":"new proxy","data":"ws://10.2.40.18:9881/ws"}
+             * 如果查询到agentIp在多个proxy下，那就随机返回一个proxy节点
+             * 前端界面为websocket.js
+             */
             return ResultHelper.success(100, "new proxy", result.get(random.nextInt(result.size())));
         } else {
             return ResultHelper.fail(1, "no proxy for agent");

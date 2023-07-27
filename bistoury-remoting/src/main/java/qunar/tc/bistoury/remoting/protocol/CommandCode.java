@@ -21,6 +21,7 @@ import com.google.common.base.Optional;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 /**
  * @author leix.xie
@@ -88,7 +89,7 @@ public enum CommandCode {
     }
 
     public static Optional<CommandCode> valueOfOldCode(int oldCode) {
-        CommandCode commandCode = oldCodeMap.get(oldCode);
+        CommandCode commandCode = oldCodeMap.get(oldCode); // 具体看：CommandCode.values()
         if (commandCode == null) {
             return Optional.absent();
         }

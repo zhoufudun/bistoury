@@ -59,8 +59,8 @@ public class HostsValidatorHandler extends ChannelInboundHandlerAdapter {
 
     // 验证 app 与 host 合法性
     private void hostValidator(final RequestData requestData, ChannelHandlerContext ctx) {
-        List<AppServer> servers = serverFinder.findAgents(requestData.getApp());
-        List<String> userHosts = requestData.getHosts();
+        List<AppServer> servers = serverFinder.findAgents(requestData.getApp()); // AppServer{serverId='bade8ba7d59b4ca0b91a044739a670aa', ip='10.2.40.18', port=8081, host='10.2.40.18', logDir='/temp/webdemo/log', room='al', appCode='bistoury_demo_app', autoJStackEnable=true, autoJMapHistoEnable=false}
+        List<String> userHosts = requestData.getHosts(); // 10.2.40.18
         List<AppServer> ret = servers;
         if (userHosts != null && !userHosts.isEmpty()) {
             ret = Lists.newArrayList();
@@ -73,7 +73,7 @@ public class HostsValidatorHandler extends ChannelInboundHandlerAdapter {
             }
         }
 
-        // 兼容旧 common-core, 将没有 logdir 的 server 删除
+        // 兼容旧 common-core, 将没有 logdir 的 AppServer 删除
         Iterator<AppServer> iterator = ret.iterator();
         while (iterator.hasNext()) {
             AppServer next = iterator.next();
@@ -85,7 +85,7 @@ public class HostsValidatorHandler extends ChannelInboundHandlerAdapter {
 
         if (ret.isEmpty()) {
             ctx.writeAndFlush(UiResponses.createHostValidateErrorResponse(requestData));
-        } else {
+        } else { // ret转化为List<AgentServerInfo>
             List<AgentServerInfo> serverInfos = Lists.transform(ret, (server) -> {
                 AgentServerInfo agentServerInfo = new AgentServerInfo();
                 agentServerInfo.setAgentId(server.getIp());

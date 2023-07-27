@@ -17,6 +17,9 @@
 
 package qunar.tc.bistoury.instrument.agent;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -29,7 +32,7 @@ import java.util.Set;
  * @author zhenyu.nie created on 2018 2018/11/19 19:45
  */
 public class BistouryClassloader extends URLClassLoader {
-
+    private static final Logger logger = LoggerFactory.getLogger(AgentBootstrap2.class);
     private ClassLoader magicClassLoader;
 
 
@@ -45,6 +48,9 @@ public class BistouryClassloader extends URLClassLoader {
 
     @Override
     protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+
+//        logger.info("BistouryClassloader loadClass, name={}, resolve={}", name ,resolve);
+
         Class<?> loadedClass = findLoadedClass(name);
         if (loadedClass != null) {
             return getResolvedClass(loadedClass, resolve);
@@ -58,8 +64,10 @@ public class BistouryClassloader extends URLClassLoader {
             return super.loadClass(name, resolve);
         }
 
+        // 从自定义的类集合中中类名
         Class<?> magicClass = loadFromMagic(name);
         if (magicClass != null) {
+            logger.info("BistouryClassloader loadClass magicClass name={}, resolve={}", name ,resolve);
             return getResolvedClass(magicClass, resolve);
         }
 

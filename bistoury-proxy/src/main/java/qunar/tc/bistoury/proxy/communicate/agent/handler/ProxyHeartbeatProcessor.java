@@ -65,13 +65,13 @@ public class ProxyHeartbeatProcessor implements AgentMessageProcessor {
     public Set<Integer> codes() {
         return ImmutableSet.of(ResponseCode.RESP_TYPE_HEARTBEAT.getCode());
     }
-
+    // proxy 处理agent定时发来的心跳信息
     @Override
     public void process(ChannelHandlerContext ctx, Datagram message) {
         logger.debug("receive heartbeat, {}", message);
         String ip = getIp(message, ctx.channel());
         message.release();
-        connectionStore.register(ip, message.getHeader().getAgentVersion(), ctx.channel());
+        connectionStore.register(ip, message.getHeader().getAgentVersion(), ctx.channel()); // proxy 保存和agent的连接信息
         ctx.channel().writeAndFlush(heartbeatResponse);
     }
 

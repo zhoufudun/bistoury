@@ -17,9 +17,14 @@
 
 package qunar.tc.bistoury.instrument.agent;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import qunar.tc.bistoury.instrument.spy.BistourySpys1;
 
+//import java.arthas.Spy;
 import java.arthas.Spy;
+//import java.arthas.SpyAPI;
+//import java.arthas.SpyAPI;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
@@ -35,6 +40,7 @@ import java.util.jar.JarFile;
  * @author zhenyu.nie created on 2018 2018/11/19 19:39
  */
 public class AgentBootstrap2 {
+    private static final Logger logger = LoggerFactory.getLogger(AgentBootstrap2.class);
 
     private static final String ADVICEWEAVER = "com.taobao.arthas.core.advisor.AdviceWeaver";
     private static final String ON_BEFORE = "methodOnBegin";
@@ -73,6 +79,7 @@ public class AgentBootstrap2 {
                 log.getParentFile().mkdirs();
                 log.createNewFile();
             }
+            System.out.println(log.getAbsolutePath());
             ps = new PrintStream(new FileOutputStream(log, true));
         } catch (Throwable t) {
             t.printStackTrace(ps);
@@ -97,6 +104,16 @@ public class AgentBootstrap2 {
         bistouryClassLoader = null;
     }
 
+    /**
+     * spy相关的需要交给启动类加载，应为所有的类都需要spy相关的类做字节码增强，所以由启动类加载
+     *
+     * @param inst
+     * @param spyJarFiles
+     * @param agentJarFile
+     * @param libClass
+     * @return
+     * @throws Throwable
+     */
     private static ClassLoader getClassLoader(Instrumentation inst, List<File> spyJarFiles, File agentJarFile, final String libClass) throws Throwable {
         // 将Spy添加到BootstrapClassLoader
         for (File spyJarFile : spyJarFiles) {
@@ -108,15 +125,17 @@ public class AgentBootstrap2 {
     }
 
     private static ClassLoader loadOrDefineClassLoader(Instrumentation inst, File agentJar, List<File> spyJarFiles, final String libClass) throws Throwable {
+
         if (bistouryClassLoader == null) {
             File dir = agentJar.getParentFile();
             File[] jars = getNonSpyJarFiles(dir, spyJarFiles);
-
+            logger.info("agentJar.getParentFile()=" + dir.getAbsolutePath());
             URL[] urls = new URL[jars.length];
             for (int i = 0; i < jars.length; ++i) {
                 urls[i] = jars[i].toURI().toURL();
             }
             ps.println("bistoury classloader urls, " + Arrays.toString(urls));
+            logger.info("abistoury classloader urls=" + Arrays.toString(urls));
             bistouryClassLoader = new BistouryClassloader(urls, findUserClassLoader(inst, libClass));
             initMagic((BistouryClassloader) bistouryClassLoader, dir);
         }
@@ -124,7 +143,9 @@ public class AgentBootstrap2 {
     }
 
     private static ClassLoader findUserClassLoader(Instrumentation inst, final String libClass) {
-        return findLibClass(inst, libClass).getClassLoader();
+        ClassLoader userClassLoader = findLibClass(inst, libClass).getClassLoader();
+        logger.info("userClassLoader={}",userClassLoader);
+        return userClassLoader;
     }
 
     // 这个方法和DefaultDebugger里面是一样的，但是这个地方不应该有依赖，所以两边都要写
@@ -180,6 +201,9 @@ public class AgentBootstrap2 {
              * MagicClassLoader magicClassLoader = new MagicClassLoader(magicJarUrls, bistouryClassLoader);
              */
             Class<?> magicClassLoaderClass = bistouryClassloader.loadClass(MAGIC_CLASS_LOADER);
+            /**
+             * 自定义qunar.tc.bistoury.magic.loader.MagicClassLoader类加载器，专门用于加载qunar.tc.bistoury.instrument.agent.BistouryClassloader.MagicClasses#MAGIC_CLASS_NAME_SET
+             */
             Constructor<?> magicClassLoaderConstructor = magicClassLoaderClass.getDeclaredConstructor(URL[].class, ClassLoader.class);
             ClassLoader magicClassLoader = (ClassLoader) magicClassLoaderConstructor.newInstance(magicJarUrls, bistouryClassloader);
 
@@ -206,7 +230,9 @@ public class AgentBootstrap2 {
         Method throwInvoke = adviceWeaverClass.getMethod(THROW_INVOKE, int.class, String.class, String.class, String.class, int.class);
         Method reset = AgentBootstrap2.class.getMethod(RESET);
         Spy.initForAgentLauncher(classLoader, onBefore, onReturn, onThrows, beforeInvoke, afterInvoke, throwInvoke, reset);
+//        SpyAPI.init();
     }
+
 
     private static void initQSpy(ClassLoader classLoader) throws ClassNotFoundException, NoSuchMethodException {
         Class<?> globalContextClass = classLoader.loadClass("qunar.tc.bistoury.instrument.client.debugger.GlobalDebugContext");
@@ -229,13 +255,25 @@ public class AgentBootstrap2 {
 
     private static synchronized void main(final String args, final Instrumentation inst) {
         try {
-            ps.println("bistoury server agent start...");
+//            ps.println("bistoury server agent start...");
 
-            String[] argsArr = args.split(DELIMITER);
+            /**
+             * args:
+             *
+             * D:\maven\repository\com\taobao\arthas\arthas-core\3.1.4\arthas-core.jar$|$;;;telnetPort=3668;httpPort=-1;ip=127.0.0.1;arthasAgent=D:\\maven\\repository\\com\\taobao\\arthas\\arthas-core\\3.1.4\\bistoury-instrument-agent.jar;sessionTimeout=1800;arthasCore=D:\\maven\\repository\\com\\taobao\\arthas\\arthas-core\\3.1.4\\arthas-core.jar;javaPid=16456;$|$null
+             */
+
+
+            logger.info("bistoury server agent start...");
+
+            String[] argsArr = args.split(DELIMITER); //  virtualMachine.loadAgent(agentFile,args);
+
             // 传递的args参数分三个部分:agentJar路径、agentArgs、用户类, 分别是Agent的JAR包路径、期望传递到服务端的参数和用户应用中的类
             String agentJar = argsArr[0];
             final String agentArgs = argsArr[1];
             final String libClass = argsArr[2];
+
+            logger.info("agentJar={}, arentArgs={}, libClass={}",agentJar,agentArgs,libClass);
 
             System.setProperty("bistoury.app.lib.class", libClass);
 
@@ -283,6 +321,7 @@ public class AgentBootstrap2 {
 
     private static File getJarFile(File dir, String name) {
         final String prefix = name.substring(0, name.indexOf('.'));
+        logger.info("dir={}, name={}",dir.getAbsolutePath(),name);
         File[] files = dir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
@@ -312,14 +351,21 @@ public class AgentBootstrap2 {
         if (!isBind) {
             try {
                 ps.println("bistoury start to bind...");
+                logger.info("bistoury start to bind...");
+                /**
+                 * 调用qunar.tc.bistoury.attach.arthas.server.BistouryBootstrap#bind(com.taobao.arthas.core.config.Configure)
+                 */
                 bootstrapClass.getMethod(BIND, classOfConfigure).invoke(bootstrap, configure);
                 ps.println("bistoury server bind success.");
+                logger.info("bistoury server bind success.");
                 return;
             } catch (Exception e) {
                 ps.println("bistoury server port binding failed! Please check $HOME/logs/arthas/arthas.log for more details.");
+                logger.error("bistoury server port binding failed! Please check $HOME/logs/arthas/arthas.log for more details.");
                 throw e;
             }
         }
         ps.println("Bistoury server already bind.");
+        logger.info("Bistoury server already bind.");
     }
 }

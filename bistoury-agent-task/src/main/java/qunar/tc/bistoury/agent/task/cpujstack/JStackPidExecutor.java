@@ -35,12 +35,18 @@ public class JStackPidExecutor implements PidExecutor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JStackPidExecutor.class);
 
+    /**
+     * JStack
+     * @param pid
+     * @return
+     */
     @Override
     public String execute(int pid) {
         VirtualMachine virtualMachine = null;
         try {
             virtualMachine = VirtualMachine.attach(String.valueOf(pid));
             HotSpotVirtualMachine hotSpotVirtualMachine = (HotSpotVirtualMachine) virtualMachine;
+            LOGGER.info("cpujstack.JStackPidExecutor.execute success");
             return readJStackOutput(hotSpotVirtualMachine);
         } catch (Exception e) {
             LOGGER.error("run JStackPidExecutor error pid:{}", pid, e);

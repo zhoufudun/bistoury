@@ -22,6 +22,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import qunar.tc.bistoury.common.NamedThreadFactory;
+import qunar.tc.decompiler.modules.decompiler.PPandMMHelper;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -55,7 +56,7 @@ public class AgentClient {
         if (start) {
             return;
         }
-        DumpFileCleaner.getInstance().start();
+        DumpFileCleaner.getInstance().start(); // 初始化dump文件相关的，并且开启开启dump文件的定时清理线程
         refreshClient();
         startFailoverTask();
         start = true;
@@ -79,6 +80,9 @@ public class AgentClient {
             ProxyConfig proxyConfig = Configs.getProxyConfig();
             logger.info("finish get bistoury proxy config, {}", proxyConfig);
             if (proxyConfig != null) {
+                /**
+                 * 和proxy 建立tcp 连接
+                 */
                 nettyClient = initNettyClient(proxyConfig);
                 if (nettyClient.isRunning()) {
                     AgentGlobalTaskInitializer.init();
@@ -95,6 +99,9 @@ public class AgentClient {
         return agentNettyClient;
     }
 
+    /**
+     * 1分钟执行一次重试和Proxy建立连接
+     */
     private void startFailoverTask() {
         FAILOVER_EXECUTOR.scheduleWithFixedDelay(new Runnable() {
             @Override
@@ -105,7 +112,7 @@ public class AgentClient {
                 if (nettyClient != null && nettyClient.isRunning()) {
                     return;
                 }
-
+                logger.info("agent client start retry connect to Proxy");
                 refreshClient();
             }
         }, 1, 1, TimeUnit.MINUTES);

@@ -8,12 +8,12 @@ import qunar.tc.bistoury.agent.common.job.ResponseJobStore;
  */
 public class DefaultRunningTask implements RunnableTask {
 
-    private final ResponseJobStore jobStore;
+    private final ResponseJobStore jobStore; // DefaultResponseJobStore
 
-    private final Task task;
+    private final Task task; // 举例：HostTask
 
     public DefaultRunningTask(ResponseJobStore jobStore, Task task) {
-        this.jobStore = jobStore;
+        this.jobStore = jobStore; // DefaultResponseJobStore
         this.task = task;
     }
 
@@ -49,7 +49,7 @@ public class DefaultRunningTask implements RunnableTask {
     }
 
     private void start() {
-        jobStore.submit(task.createJob());
+        jobStore.submit(task.createJob()); // 举例：HostTask
     }
 
     private void stop() {

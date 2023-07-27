@@ -30,6 +30,13 @@ import java.util.List;
 
 /**
  * 如果Java版本高于java 9，启动agent需要在启动参数中添加--add-opens=java.base/jdk.internal.perf=ALL-UNNAMED
+ *
+ * 本地调试启动参数加上：-Dbistoury.proxy.host=127.0.0.1:9090 -Dbistoury.user.pid=19876
+ * 127.0.0.1:9090 表示proxy地址   bistoury.user.pid=19876 表示需要attach的进程
+ *
+ * 为了查看用户进程的jar包信息
+ *
+ * 问题：需要设置用户进程的lib位置参数；bistoury.app.lib.class=com.example.webdemo.WebdemoApplication等，这个是为了找到应用所有的jar包
  */
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);

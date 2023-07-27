@@ -30,7 +30,7 @@ public class PidBySystemPropertyHandler extends AbstractPidHandler implements Pi
     public int priority() {
         return Priority.FROM_SYSTEM_PROPERTY_PRIORITY;
     }
-
+    // win环境下无法执行ps执行，因此，这里可以提前设置好需要监控的程序的pid，方便本地测试
     @Override
     protected int doGetPid() {
         return Integer.valueOf(System.getProperty("bistoury.user.pid", "-1"));

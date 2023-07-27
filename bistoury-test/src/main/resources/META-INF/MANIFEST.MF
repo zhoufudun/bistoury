@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Can-Retransform-Classes: true
+Premain-Class: histoury.test.attach.agentmainTest
+Agent-Class: histoury.test.attach.agentmainTest
+Main-Class: histoury.test.attach.Main

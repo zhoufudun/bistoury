@@ -43,7 +43,7 @@ class ConfigWatcher {
 
         start();
     }
-
+    // 定时检查配置文件是否有更新，10s检查一次
     private void start() {
         watcherExecutor.scheduleWithFixedDelay(new Runnable() {
             @Override
@@ -71,7 +71,7 @@ class ConfigWatcher {
         }
 
         watch.setLastModified(lastModified);
-        config.onConfigModified();
+        config.onConfigModified(); // 文件由修改触发配置更新逻辑
     }
 
     void addWatch(final LocalDynamicConfig config) {
@@ -81,8 +81,8 @@ class ConfigWatcher {
     }
 
     private static final class Watch {
-        private final LocalDynamicConfig config;
-        private volatile long lastModified;
+        private final LocalDynamicConfig config; // 举例：LocalDynamicConfig{name='server.properties'}
+        private volatile long lastModified; // 该配置对象的文件最近修改时间
 
         private Watch(final LocalDynamicConfig config) {
             this.config = config;

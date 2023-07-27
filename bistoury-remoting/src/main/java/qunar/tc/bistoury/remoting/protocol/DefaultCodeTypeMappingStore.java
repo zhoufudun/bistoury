@@ -19,6 +19,8 @@ package qunar.tc.bistoury.remoting.protocol;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import qunar.tc.bistoury.remoting.command.*;
 
 import java.util.Map;
@@ -30,6 +32,8 @@ import static qunar.tc.bistoury.remoting.protocol.CommandCode.*;
  * @author zhenyu.nie created on 2019 2019/5/23 20:04
  */
 public class DefaultCodeTypeMappingStore implements CodeTypeMappingStore {
+
+    private static final Logger logger = LoggerFactory.getLogger(DefaultCodeTypeMappingStore.class);
 
     private final Map<Integer, Class<?>> codeTypeMappings = Maps.newHashMap();
 
@@ -96,6 +100,7 @@ public class DefaultCodeTypeMappingStore implements CodeTypeMappingStore {
     public void register(Class<?> type, Set<Integer> codes) {
         for (Integer code : codes) {
             codeTypeMappings.put(code, type);
+            logger.info("codeTypeMappings key={}, value={}",code,type);
         }
     }
 

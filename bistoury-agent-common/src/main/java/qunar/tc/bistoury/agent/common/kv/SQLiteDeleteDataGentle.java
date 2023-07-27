@@ -35,6 +35,9 @@ public class SQLiteDeleteDataGentle {
         this.sqLite = sqLite;
     }
 
+    /**
+     * 删除过期的数据（3天过期）
+     */
     public void start() {
         executorService.scheduleWithFixedDelay(new Runnable() {
             @Override
@@ -51,7 +54,7 @@ public class SQLiteDeleteDataGentle {
 
     /**
      * 削峰
-     *
+     * 温和删除过期数据
      * @return
      */
     private int deleteGentle() {
@@ -60,11 +63,11 @@ public class SQLiteDeleteDataGentle {
         int count = 0;
 
         while (true) {
-            int limit = META_STORE.getIntProperty("delete.each.query.limit", 10000);
-            int slice = META_STORE.getIntProperty("delete.slice.size", 100);
-            long sleepTime = META_STORE.getLongProperty("delete.sleep.ms", 100);
+            int limit = META_STORE.getIntProperty("delete.each.query.limit", 10000); // 本地数据库查询一次限制1w
+            int slice = META_STORE.getIntProperty("delete.slice.size", 100); // 分片大小100，每次删除100条
+            long sleepTime = META_STORE.getLongProperty("delete.sleep.ms", 100); // 每次删除休息100ms
 
-            //一次查询 $limit 条key
+            //一次查询 $limit 条key，最多1w条
             List<String> keySet = sqLite.expireKey(expireTimestamp, limit);
 
             if (keySet.size() == 0) {

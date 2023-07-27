@@ -18,6 +18,8 @@
 package qunar.tc.bistoury.serverside.common.encryption;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import qunar.tc.bistoury.common.JacksonSerializer;
 import qunar.tc.bistoury.remoting.protocol.RequestData;
 
@@ -30,14 +32,16 @@ import java.util.Map;
  */
 public class DefaultRequestEncryption implements RequestEncryption {
 
+    private static Logger logger = LoggerFactory.getLogger(DefaultRequestEncryption.class);
+
     private static final TypeReference<Map<String, Object>> mapReference = new TypeReference<Map<String, Object>>() {
     };
 
     private static final TypeReference<RequestData<String>> inputType = new TypeReference<RequestData<String>>() {
     };
 
-    private static final String KEY_INDEX = "0";
-    private static final String DATA_INDEX = "1";
+    private static final String KEY_INDEX = "0"; // key字段
+    private static final String DATA_INDEX = "1";// value字段
 
     private final RSAEncryption rsa;
 
@@ -47,12 +51,13 @@ public class DefaultRequestEncryption implements RequestEncryption {
 
     @Override
     public RequestData<String> decrypt(String in) throws IOException {
-        Map<String, Object> map = JacksonSerializer.deSerialize(in, mapReference);
-        String rsaData = (String) map.get(KEY_INDEX);
-        String data = (String) map.get(DATA_INDEX);
+        Map<String, Object> map = JacksonSerializer.deSerialize(in, mapReference); // 解析为map： {"0":"rWyLwiZBc4ew63Ck79Sr0crZ3P5YRuyFZgnMfJA0esg3ZjeR2zLAFYQUIcF+26c55e1ATc3q6qSDhwXrLE2IEIyrJdMA0iBFQ8gXJmtJ7Y8U7ZsdavGqH1Nyf+XCJxcpgHjO1sQiEXkrmCtqJifaoncehJV+p5vIjDaAOTn8iHk=","1":"Sz4A8LYtvz4y7zSHqd2TXuELgu/bC+dVErh+NCGB74YbMaV7o1ZhF3ork+SjOXetWhzBBNwXIXw8Oso+AyHR28q6/KkBSH1vUVsSTgXfvwlOqFy2X5vLyhk0zXMh+l9gFRI3aEcNXE6M3sVGYHA4y9J76d8wgA0MRgBpXmTXXYPC/DTsqL7Myw=="}
+        String rsaData = (String) map.get(KEY_INDEX); // key=rWyLwiZBc4ew63Ck79Sr0crZ3P5YRuyFZgnMfJA0esg3ZjeR2zLAFYQUIcF+26c55e1ATc3q6qSDhwXrLE2IEIyrJdMA0iBFQ8gXJmtJ7Y8U7ZsdavGqH1Nyf+XCJxcpgHjO1sQiEXkrmCtqJifaoncehJV+p5vIjDaAOTn8iHk=
+        String data = (String) map.get(DATA_INDEX); // value=Sz4A8LYtvz4y7zSHqd2TXuELgu/bC+dVErh+NCGB74YbMaV7o1ZhF3ork+SjOXetWhzBBNwXIXw8Oso+AyHR28q6/KkBSH1vUVsSTgXfvwlOqFy2X5vLyhk0zXMh+l9gFRI3aEcNXE6M3sVGYHA4y9J76d8wgA0MRgBpXmTXXYPC/DTsqL7Myw==
 
         String desKey = rsa.decrypt(rsaData);
-        String requestStr = EncryptionUtils.decryptDes(data, desKey);
+        String requestStr = EncryptionUtils.decryptDes(data, desKey); // {"user":"admin","type":10,"app":"bistoury_demo_app","hosts":["10.2.40.18"],"command":"","token":"5a9f3556960290d9a62fdba1a1255b9b"}
+        logger.info("decrypt, map={}, rsaData={}, data={}, desKey={}, requestStr={}",map,rsaData,desKey,requestStr);
         return JacksonSerializer.deSerialize(requestStr, inputType);
     }
 

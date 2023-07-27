@@ -49,6 +49,67 @@ public class ProcUtil {
     static {
         int cpuNum = 0;
         try {
+            /**
+             * 获取cpu核心数
+             *
+             * /proc/cpuinfo如下：
+             *
+             * processor       : 0
+             * vendor_id       : GenuineIntel
+             * cpu family      : 6
+             * model           : 165
+             * model name      : Intel(R) Core(TM) i7-10700 CPU @ 2.90GHz
+             * stepping        : 5
+             * microcode       : 0xc8
+             * cpu MHz         : 2903.997
+             * cache size      : 16384 KB
+             * physical id     : 0
+             * siblings        : 2
+             * core id         : 0
+             * cpu cores       : 2
+             * apicid          : 0
+             * initial apicid  : 0
+             * fpu             : yes
+             * fpu_exception   : yes
+             * cpuid level     : 22
+             * wp              : yes
+             * flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon nopl xtopology tsc_reliable nonstop_tsc eagerfpu pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd rsb_ctxsw ibrs ibpb stibp ibrs_enhanced fsgsbase tsc_adjust bmi1 avx2 smep bmi2 invpcid rdseed adx smap clflushopt xsaveopt xsavec xgetbv1 arat pku ospke md_clear spec_ctrl intel_stibp flush_l1d arch_capabilities
+             * bogomips        : 5807.99
+             * clflush size    : 64
+             * cache_alignment : 64
+             * address sizes   : 45 bits physical, 48 bits virtual
+             * power management:
+             *
+             * processor       : 1
+             * vendor_id       : GenuineIntel
+             * cpu family      : 6
+             * model           : 165
+             * model name      : Intel(R) Core(TM) i7-10700 CPU @ 2.90GHz
+             * stepping        : 5
+             * microcode       : 0xc8
+             * cpu MHz         : 2903.997
+             * cache size      : 16384 KB
+             * physical id     : 0
+             * siblings        : 2
+             * core id         : 1
+             * cpu cores       : 2
+             * apicid          : 1
+             * initial apicid  : 1
+             * fpu             : yes
+             * fpu_exception   : yes
+             * cpuid level     : 22
+             * wp              : yes
+             * flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon nopl xtopology tsc_reliable nonstop_tsc eagerfpu pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd rsb_ctxsw ibrs ibpb stibp ibrs_enhanced fsgsbase tsc_adjust bmi1 avx2 smep bmi2 invpcid rdseed adx smap clflushopt xsaveopt xsavec xgetbv1 arat pku ospke md_clear spec_ctrl intel_stibp flush_l1d arch_capabilities
+             * bogomips        : 5807.99
+             * clflush size    : 64
+             * cache_alignment : 64
+             * address sizes   : 45 bits physical, 48 bits virtual
+             * power management:
+             *
+             *
+             */
+
+            // 一行一行读取：
             cpuNum = Files.readLines(new File(cpuInfoFilePath), Charsets.UTF_8, new LineProcessor<Integer>() {
                 private int cpuNum = 0;
 

@@ -34,7 +34,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-/**
+/** 和agent交互的编解码工具
+ *
+ * ByteBuf转为Datagram解码器
+ *
  * @author sen.chai
  * @date 15-6-30
  */
@@ -94,7 +97,7 @@ public class AgentDecoder extends ByteToMessageDecoder {
         } else {
             header.setProperties(Collections.<String, String>emptyMap());
         }
-
+        logger.info("code from ui is={}",header.getCode());
         return header;
     }
 }

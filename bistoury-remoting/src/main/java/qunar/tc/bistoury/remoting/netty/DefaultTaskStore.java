@@ -63,7 +63,7 @@ public class DefaultTaskStore implements TaskStore {
                     if (currentTime - wrapTask.getTimestamp() > task.getMaxRunningMs()) {
                         logger.warn("try cancel task [{}], running too long times", task.getId());
                         task.cancel();
-                        tasks.remove(entry.getKey());
+                        tasks.remove(entry.getKey()); //任务超过最大执行时间，取消任务
                     }
                 }
             } finally {
@@ -78,7 +78,7 @@ public class DefaultTaskStore implements TaskStore {
             if (close) {
                 return false;
             }
-
+            // 执行任务之前，先记录，超过一定时间需要取消任务，防止有些任务时间太长或者执行失败没有从tasks删除
             WrapTask old = tasks.putIfAbsent(task.getId(), new WrapTask(task, System.currentTimeMillis()));
             return old == null;
         }
@@ -133,8 +133,8 @@ public class DefaultTaskStore implements TaskStore {
         private final long timestamp;
 
         private WrapTask(RunnableTask task, long timestamp) {
-            this.task = task;
-            this.timestamp = timestamp;
+            this.task = task; // DefaultRunningTask
+            this.timestamp = timestamp; // 任务开始执行时间
         }
 
         public RunnableTask getTask() {

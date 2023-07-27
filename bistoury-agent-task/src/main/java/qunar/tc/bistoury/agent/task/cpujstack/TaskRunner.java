@@ -111,7 +111,10 @@ public class TaskRunner implements Runnable {
         }
 
         String jstackResult = jstackExecutor.execute(pid);
-
+//        logger.info("jstackResult="+jstackResult);
+        /**
+         * 获取线程过去一分钟的cpu使用率
+         */
         Map<String, Double> threadMinuteTimes = ProcUtil.transformHexThreadId(ProcessStateCalculator.getInstance().threadCpuMinuteUsage(pid));
         Map<String, ThreadInfo> threadInfos = parseThreadInfos(jstackResult);
         addThreadMinuteCpuTime(threadInfos, threadMinuteTimes);
@@ -125,6 +128,9 @@ public class TaskRunner implements Runnable {
                 totalTime += time;
             }
         }
+        /**
+         * 统计数据插入key-value数据库
+         */
         kvDb.putBatch(dbMinuteCpuTimes);
 
         kvDb.put(KvUtils.getThreadNumKey(timestamp), String.valueOf(threadMinuteTimes.size()));
@@ -174,7 +180,40 @@ public class TaskRunner implements Runnable {
     private Map<String, ThreadInfo> parseThreadInfos(String jstackResult) {
         try {
             Map<String, ThreadInfo> threadInfos = Maps.newHashMap();
-
+            // 一行行读取jstackResult
+            /**
+             * jstackResult如下：
+             * Full thread dump Java HotSpot(TM) 64-Bit Server VM (25.162-b12 mixed mode):
+             *
+             * "DestroyJavaVM" #46 prio=5 os_prio=0 tid=0x0000000022d79800 nid=0x574 waiting on condition [0x0000000000000000]
+             *    java.lang.Thread.State: RUNNABLE
+             *
+             * "http-nio-8081-Acceptor" #45 daemon prio=5 os_prio=0 tid=0x0000000022d7c800 nid=0x5344 runnable [0x00000000256bf000]
+             *    java.lang.Thread.State: RUNNABLE
+             * 	at sun.nio.ch.ServerSocketChannelImpl.accept0(Native Method)
+             * 	at sun.nio.ch.ServerSocketChannelImpl.accept(ServerSocketChannelImpl.java:422)
+             * 	at sun.nio.ch.ServerSocketChannelImpl.accept(ServerSocketChannelImpl.java:250)
+             * 	- locked <0x0000000771015d38> (a java.lang.Object)
+             * 	at org.apache.tomcat.util.net.NioEndpoint.serverSocketAccept(NioEndpoint.java:546)
+             * 	at org.apache.tomcat.util.net.NioEndpoint.serverSocketAccept(NioEndpoint.java:79)
+             * 	at org.apache.tomcat.util.net.Acceptor.run(Acceptor.java:129)
+             * 	at java.lang.Thread.run(Thread.java:748)
+             *
+             * "http-nio-8081-Poller" #44 daemon prio=5 os_prio=0 tid=0x0000000022d78000 nid=0x52e4 runnable [0x00000000255be000]
+             *    java.lang.Thread.State: RUNNABLE
+             * 	at sun.nio.ch.WindowsSelectorImpl$SubSelector.poll0(Native Method)
+             * 	at sun.nio.ch.WindowsSelectorImpl$SubSelector.poll(WindowsSelectorImpl.java:296)
+             * 	at sun.nio.ch.WindowsSelectorImpl$SubSelector.access$400(WindowsSelectorImpl.java:278)
+             * 	at sun.nio.ch.WindowsSelectorImpl.doSelect(WindowsSelectorImpl.java:159)
+             * 	at sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:86)
+             * 	- locked <0x0000000771016580> (a sun.nio.ch.Util$3)
+             * 	- locked <0x0000000771016570> (a java.util.Collections$UnmodifiableSet)
+             * 	- locked <0x0000000771016400> (a sun.nio.ch.WindowsSelectorImpl)
+             * 	at sun.nio.ch.SelectorImpl.select(SelectorImpl.java:97)
+             * 	at org.apache.tomcat.util.net.NioEndpoint$Poller.run(NioEndpoint.java:807)
+             * 	at java.lang.Thread.run(Thread.java:748)
+             *
+             */
             List<String> lines = CharSource.wrap(jstackResult).readLines();
             AtomicInteger index = new AtomicInteger(0);
 
@@ -191,14 +230,58 @@ public class TaskRunner implements Runnable {
         }
     }
 
+    /**
+     * Full thread dump Java HotSpot(TM) 64-Bit Server VM (25.162-b12 mixed mode):
+     *
+     * "DestroyJavaVM" #46 prio=5 os_prio=0 tid=0x0000000022d79800 nid=0x574 waiting on condition [0x0000000000000000]
+     *    java.lang.Thread.State: RUNNABLE
+     *
+     * "http-nio-8081-Acceptor" #45 daemon prio=5 os_prio=0 tid=0x0000000022d7c800 nid=0x5344 runnable [0x00000000256bf000]
+     *    java.lang.Thread.State: RUNNABLE
+     * 	at sun.nio.ch.ServerSocketChannelImpl.accept0(Native Method)
+     * 	at sun.nio.ch.ServerSocketChannelImpl.accept(ServerSocketChannelImpl.java:422)
+     * 	at sun.nio.ch.ServerSocketChannelImpl.accept(ServerSocketChannelImpl.java:250)
+     * 	- locked <0x0000000771015d38> (a java.lang.Object)
+     * 	at org.apache.tomcat.util.net.NioEndpoint.serverSocketAccept(NioEndpoint.java:546)
+     * 	at org.apache.tomcat.util.net.NioEndpoint.serverSocketAccept(NioEndpoint.java:79)
+     * 	at org.apache.tomcat.util.net.Acceptor.run(Acceptor.java:129)
+     * 	at java.lang.Thread.run(Thread.java:748)
+     *
+     * "http-nio-8081-Poller" #44 daemon prio=5 os_prio=0 tid=0x0000000022d78000 nid=0x52e4 runnable [0x00000000255be000]
+     *    java.lang.Thread.State: RUNNABLE
+     * 	at sun.nio.ch.WindowsSelectorImpl$SubSelector.poll0(Native Method)
+     * 	at sun.nio.ch.WindowsSelectorImpl$SubSelector.poll(WindowsSelectorImpl.java:296)
+     * 	at sun.nio.ch.WindowsSelectorImpl$SubSelector.access$400(WindowsSelectorImpl.java:278)
+     * 	at sun.nio.ch.WindowsSelectorImpl.doSelect(WindowsSelectorImpl.java:159)
+     * 	at sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:86)
+     * 	- locked <0x0000000771016580> (a sun.nio.ch.Util$3)
+     * 	- locked <0x0000000771016570> (a java.util.Collections$UnmodifiableSet)
+     * 	- locked <0x0000000771016400> (a sun.nio.ch.WindowsSelectorImpl)
+     * 	at sun.nio.ch.SelectorImpl.select(SelectorImpl.java:97)
+     * 	at org.apache.tomcat.util.net.NioEndpoint$Poller.run(NioEndpoint.java:807)
+     * 	at java.lang.Thread.run(Thread.java:748)
+     *
+     * 	..................
+     * 	..................
+     * 	..................
+     * @param lines
+     * @param index
+     * @return
+     */
     private ThreadInfo parseThreadInfo(List<String> lines, AtomicInteger index) {
-        int firstLine = findFirstLine(lines, index);
+        int firstLine = findFirstLine(lines, index); // 获取第一行位置，这一行以“开头，并且包含nid
         if (firstLine < 0) {
             index.set(lines.size());
             return null;
         }
 
         String threadFirstLine = lines.get(firstLine);
+        /**
+         *  解析出线程信息，例如
+         *  "http-nio-8081-Acceptor" #45 daemon prio=5 os_prio=0 tid=0x0000000022d7c800 nid=0x5344 runnable [0x00000000256bf000]
+         *
+         *  从这一行解析出线程信息
+         */
         ThreadInfo threadInfo = parseThreadFirstLine(threadFirstLine);
         int secondLine = firstLine + 1;
         if (secondLine == lines.size()) {
@@ -211,25 +294,64 @@ public class TaskRunner implements Runnable {
             index.set(secondLine);
             return threadInfo;
         }
-
+        /**
+         *  threadSecondLine存在线程状态，解析出线程状态
+         * "http-nio-8081-Acceptor" #45 daemon prio=5 os_prio=0 tid=0x0000000022d7c800 nid=0x5344 runnable [0x00000000256bf000]
+         *    java.lang.Thread.State: RUNNABLE
+         */
         String state = parseThreadState(threadSecondLine);
         threadInfo.setState(state);
 
+
         index.set(secondLine);
         while (index.get() < lines.size() && !Strings.isNullOrEmpty(lines.get(index.get()))) {
-            index.incrementAndGet();
+            index.incrementAndGet(); // 一直解析到空行位置，此时firstLine~index都是线程stack信息
         }
-
+        /**
+         * 解析出第二行以后的信息为stack信息
+         *
+         * "http-nio-8081-Acceptor" #45 daemon prio=5 os_prio=0 tid=0x0000000022d7c800 nid=0x5344 runnable [0x00000000256bf000]
+         *    java.lang.Thread.State: RUNNABLE
+         * 	    at sun.nio.ch.ServerSocketChannelImpl.accept0(Native Method)
+         * 	    at sun.nio.ch.ServerSocketChannelImpl.accept(ServerSocketChannelImpl.java:422)
+         * 	    at sun.nio.ch.ServerSocketChannelImpl.accept(ServerSocketChannelImpl.java:250)
+         * 	    - locked <0x0000000771015d38> (a java.lang.Object)
+         * 	    at org.apache.tomcat.util.net.NioEndpoint.serverSocketAccept(NioEndpoint.java:546)
+         * 	    at org.apache.tomcat.util.net.NioEndpoint.serverSocketAccept(NioEndpoint.java:79)
+         * 	    at org.apache.tomcat.util.net.Acceptor.run(Acceptor.java:129)
+         * 	    at java.lang.Thread.run(Thread.java:748)
+         */
         List<String> stackLines = lines.subList(firstLine, index.get());
         String stack = LINE_JOINER.join(stackLines);
         threadInfo.setStack(stack);
-
+        /**
+         * 解析出lock相关的信息
+         *
+         */
         List<String> lockOn = parseLockOn(stackLines);
         threadInfo.setLockOn(lockOn);
 
         return threadInfo;
     }
 
+    /**
+     *  解析出lock相关信息：
+     *
+     *  "http-nio-8081-Acceptor" #45 daemon prio=5 os_prio=0 tid=0x0000000022d7c800 nid=0x5344 runnable [0x00000000256bf000]
+     *    java.lang.Thread.State: RUNNABLE
+     * 	at sun.nio.ch.ServerSocketChannelImpl.accept0(Native Method)
+     * 	at sun.nio.ch.ServerSocketChannelImpl.accept(ServerSocketChannelImpl.java:422)
+     * 	at sun.nio.ch.ServerSocketChannelImpl.accept(ServerSocketChannelImpl.java:250)
+     * 	- locked <0x0000000771015d38> (a java.lang.Object)
+     * 	at org.apache.tomcat.util.net.NioEndpoint.serverSocketAccept(NioEndpoint.java:546)
+     * 	at org.apache.tomcat.util.net.NioEndpoint.serverSocketAccept(NioEndpoint.java:79)
+     * 	at org.apache.tomcat.util.net.Acceptor.run(Acceptor.java:129)
+     * 	at java.lang.Thread.run(Thread.java:748)
+     *
+     *
+     * @param lines
+     * @return
+     */
     private List<String> parseLockOn(List<String> lines) {
         if (lines.size() < 3) {
             return ImmutableList.of();
@@ -264,7 +386,16 @@ public class TaskRunner implements Runnable {
         return input.substring(1, input.length() - 1);
     }
 
-
+    /**
+     * at sun.nio.ch.ServerSocketChannelImpl.accept(ServerSocketChannelImpl.java:422)
+     * 	at sun.nio.ch.ServerSocketChannelImpl.accept(ServerSocketChannelImpl.java:250)
+     * 	- locked <0x0000000771015d38> (a java.lang.Object)
+     * 	at org.apache.tomcat.util.net.NioEndpoint.serverSocketAccept(NioEndpoint.java:546)
+     * 	at org.apache.tomcat.util.net.NioEndpoint.serverSocketAccept(NioEndpoint.java:79)
+     *
+     * @param strs
+     * @return
+     */
     private int findLockIdIndex(List<String> strs) {
         for (int i = 0; i < strs.size(); ++i) {
             String str = strs.get(i);

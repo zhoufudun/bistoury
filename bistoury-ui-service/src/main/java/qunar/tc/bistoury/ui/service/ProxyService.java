@@ -24,7 +24,7 @@ import java.util.Optional;
 
 public interface ProxyService {
 
-    List<String> getAllProxyUrls();
+    List<String> getAllProxyUrlsFromRegister();
 
     List<String> getWebSocketUrl(final String agentIp);
 

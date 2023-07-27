@@ -72,7 +72,7 @@ public class AgentMetaController {
         }
 
         byte[] byteIps = JacksonSerializer.serializeToBytes(ips);
-        List<String> proxyWebSocketUrls = proxyService.getAllProxyUrls();
+        List<String> proxyWebSocketUrls = proxyService.getAllProxyUrlsFromRegister();
         for (String proxyWebSocketUrl : proxyWebSocketUrls) {
             Optional<ProxyInfo> optional = ProxyInfoParser.parseProxyInfo(proxyWebSocketUrl);
             if (!optional.isPresent()) {

@@ -81,6 +81,9 @@ public class PidByJpsHandler extends AbstractPidHandler implements PidHandler {
 
     private Res<List<String>> getJpsInfo() {
         Res<List<String>> res = new Res<>();
+        System.out.println(Jps.class.getClassLoader());
+        System.out.println(Jps.class.getClassLoader().getParent());
+        System.out.println(Jps.class.getClassLoader().getParent().getParent());
         Jps.executeJps(new String[]{"-l"}, res);
         return res;
     }

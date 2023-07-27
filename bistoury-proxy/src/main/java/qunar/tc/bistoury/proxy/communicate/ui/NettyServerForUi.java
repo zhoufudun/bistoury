@@ -46,6 +46,9 @@ import qunar.tc.bistoury.serverside.common.encryption.RSAEncryption;
 
 /**
  * @author zhenyu.nie created on 2019 2019/5/16 11:33
+ *
+ * 提供ws协议，和ui直接交互
+ *
  */
 public class NettyServerForUi implements NettyServer {
 
@@ -72,9 +75,9 @@ public class NettyServerForUi implements NettyServer {
 
     private final CommunicateCommandStore commandStore;
 
-    private final AppServerService appServerService;
+    private final AppServerService appServerService; // 和数据库交互
 
-    private final AppCenterServerFinder serverFinder;
+    private final AppCenterServerFinder serverFinder; // 服务查找器，仅仅包装了AppServerService
 
     private volatile Channel channel;
 
@@ -123,6 +126,13 @@ public class NettyServerForUi implements NettyServer {
                                         uiConnectionStore,
                                         agentConnectionStore,
                                         sessionManager));
+                        /**
+                         * inbound消息处理顺序：
+                         * head->HttpServerCodec...->UiRequestHandler->tail
+                         *
+                         * outbound消息处理顺序：
+                         * tail->UiRequestHandler...->HttpServerCodec->head
+                         */
                     }
                 });
         try {

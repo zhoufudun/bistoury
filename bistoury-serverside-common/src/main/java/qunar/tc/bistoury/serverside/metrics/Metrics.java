@@ -31,7 +31,7 @@ public class Metrics {
     private static final BistouryMetricRegistry INSTANCE;
 
     static {
-        ServiceLoader<BistouryMetricRegistry> registries = ServiceLoader.load(BistouryMetricRegistry.class);
+        ServiceLoader<BistouryMetricRegistry> registries = ServiceLoader.load(BistouryMetricRegistry.class); // qunar.tc.bistoury.metrics.prometheus.PrometheusBistouryMetricRegistry
         BistouryMetricRegistry instance = null;
         for (BistouryMetricRegistry registry : registries) {
             instance = registry;

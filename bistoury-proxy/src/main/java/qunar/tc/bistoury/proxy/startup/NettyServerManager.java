@@ -99,15 +99,15 @@ public class NettyServerManager {
     @PostConstruct
     public void start() {
         zkClient = ZKClientCache.get(registryStore.getZkAddress());
-        conf = Conf.fromMap(DynamicConfigLoader.load("global.properties").asMap());
+        conf = Conf.fromMap(DynamicConfigLoader.load("global.properties").asMap()); // 读取global.properties配置文件
 
-        websocketPort = conf.getInt("server.port", -1);
+        websocketPort = conf.getInt("server.port", -1); // server.port 最为websocket端口
         tomcatPort = ServerManager.getTomcatPort();
 
-        nettyServerForAgent = startAgentServer(conf);
-        nettyServerForUi = startUiServer(conf);
+        nettyServerForAgent = startAgentServer(conf); // 接受agent的netty请求
+        nettyServerForUi = startUiServer(conf); // 接收ui的ws请求
 
-        online();
+        online(); // proxy节点信息注册到zk
     }
 
     @PreDestroy
@@ -132,7 +132,7 @@ public class NettyServerManager {
     }
 
     private NettyServerForAgent startAgentServer(Conf conf) {
-        AgentMessageHandler handler = new AgentMessageHandler(agentMessageProcessors);
+        AgentMessageHandler handler = new AgentMessageHandler(agentMessageProcessors); // agentMessageProcessors包括：AgentInfoRefreshProcessor、AgentProfilerFileProcessor、AgentResponseProcessor、ProxyHeartBeatProcessor
         NettyServerForAgent serverForAgent = new NettyServerForAgent(conf, handler);
         serverForAgent.start();
         return serverForAgent;
@@ -169,23 +169,23 @@ public class NettyServerManager {
     }
 
     private void register() {
-        registerUiNode();
+        registerProxyNode();
         zkClient.addConnectionChangeListener((sender, state) -> {
             if (state == ConnectionState.RECONNECTED) {
-                deleteSelf();
-                registerUiNode();
+                deleteSelf(); // 本Proxy重启后需要执行删除自己在zk注册的信息，应为可能本proxy的端口变了
+                registerProxyNode();// 本Proxy最新的信息注册到zk
             }
         });
     }
-
+    // proxy 节点信息写入注册中心（zookeeper）
     private String doRegister(String basePath, String node) {
         try {
             if (!zkClient.checkExist(basePath)) {
                 zkClient.addPersistentNode(basePath);
             }
-            node = ZKPaths.makePath(basePath, node);
-            deleteNode(node);
-            zkClient.addEphemeralNode(node);
+            node = ZKPaths.makePath(basePath, node); // /bistoury/proxy/new/group/ui/10.2.40.18:9090:9881
+            deleteNode(node); // zk中删除node节点
+            zkClient.addEphemeralNode(node);// 添加node的临时节点
             logger.info("zk register successfully, node {}", node);
         } catch (Exception e) {
             logger.error("zk register failed", e);
@@ -193,7 +193,7 @@ public class NettyServerManager {
         return node;
     }
 
-    private void registerUiNode() {
+    private void registerProxyNode() {
         this.uiNode = doRegister(registryStore.getProxyZkPathForNewUi(), getIp() + ":" + tomcatPort + ":" + websocketPort);
     }
 
@@ -208,7 +208,7 @@ public class NettyServerManager {
     }
 
     public boolean online() {
-        deleteSelf();
+        deleteSelf(); //
         register();
         return true;
     }

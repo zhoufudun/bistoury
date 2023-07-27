@@ -39,6 +39,7 @@ public class ConnectionCounterHandler extends ChannelInboundHandlerAdapter {
     private final String name;
 
     public ConnectionCounterHandler(String name) {
+        // 第一次执行Metrics.gauge会触发static静态代码快
         Metrics.gauge("netty_connection_" + name + "_active", count::doubleValue);
         this.name = name;
     }

@@ -46,7 +46,7 @@ public abstract class AbstractCommand<T> implements CommunicateCommandProcessor<
         Preconditions.checkArgument(theType instanceof Class && ((Class) theType).getTypeParameters().length == 0, "[%s]参数必须是个非泛型类", theType);
         this.type = (Class<T>) theType;
     }
-
+    // processor处理数据之前的前置处理逻辑
     @Override
     @SuppressWarnings("unchecked")
     public final Optional<RequestData<T>> preprocessor(RequestData<String> requestData, ChannelHandlerContext ctx) throws Exception {
@@ -58,7 +58,7 @@ public abstract class AbstractCommand<T> implements CommunicateCommandProcessor<
             return doPreprocessor(data, ctx);
         }
     }
-
+    // 数据包装一下而且
     protected Optional<RequestData<T>> doPreprocessor(RequestData<T> requestData, ChannelHandlerContext ctx) throws Exception {
         return Optional.of(requestData);
     }

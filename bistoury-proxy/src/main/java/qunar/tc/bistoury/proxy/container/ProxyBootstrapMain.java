@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package qunar.tc.bistoury.ui.container;
+package qunar.tc.bistoury.proxy.container;
 
 import com.google.common.base.Strings;
 import org.apache.catalina.core.StandardContext;
@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import qunar.tc.bistoury.common.FileUtil;
 import qunar.tc.bistoury.serverside.configuration.DynamicConfig;
 import qunar.tc.bistoury.serverside.configuration.DynamicConfigLoader;
+import qunar.tc.bistoury.serverside.configuration.local.LocalDynamicConfig;
 import qunar.tc.bistoury.serverside.util.ServerManager;
 
 import java.io.File;
@@ -38,35 +39,39 @@ import java.util.List;
  * @author: leix.xie
  * @date: 2019/7/15 11:12
  * @describe：注意：本地调试启动前请设置bistoury.conf参数
+ *
+ * 本地调试jvm参数加上：-Dbistoury.conf=D:\code\bistoury\bistoury-proxy\conf
  */
-public class Bootstrap {
-    private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
+public class ProxyBootstrapMain {
+    private static final Logger logger = LoggerFactory.getLogger(ProxyBootstrapMain.class);
     protected static final StringManager sm = StringManager.getManager(Constants.Package);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         try {
             final String confDir = System.getProperty("bistoury.conf");
             if (Strings.isNullOrEmpty(confDir)) {
                 throw new RuntimeException("请在JVM参数中配置项目配置文件目录，即bistoury.conf");
             }
-            DynamicConfig config = DynamicConfigLoader.load("server.properties");
+            // 加载配置
+            DynamicConfig<LocalDynamicConfig> config = DynamicConfigLoader.load("server.properties");
 
             int port = config.getInt("tomcat.port");
-            System.setProperty("bistoury.tomcat.port", String.valueOf(port));
+            System.setProperty("bistoury.tomcat.port", String.valueOf(port)); // tomcat.port作为bistoury.tomcat.port端口
 
             Tomcat tomcat = new Tomcat();
             tomcat.setPort(port);
-            tomcat.setBaseDir(config.getString("tomcat.basedir"));
+
+            tomcat.setBaseDir(config.getString("tomcat.basedir")); // 举例：/tmp/bistoury/tomcat/proxy
             tomcat.getHost().setAutoDeploy(false);
 
-            final String webappDirLocation = getWebappDirLocation();
+            final String webappDirLocation = getWebappDirLocation(); // D:\code\bistoury\bistoury-proxy\target\webapp
 
             StandardContext ctx = (StandardContext) tomcat.addWebapp("/", new File(webappDirLocation).getAbsolutePath());
 
             String contextPath = "";
             ctx.setPath(contextPath);
             ctx.addLifecycleListener(new Tomcat.FixContextListener());
-            ctx.setName("bistoury-ui");
+            ctx.setName("bistoury-proxy"); // 应用名称
             tomcat.getHost().addChild(ctx);
 
             log(webappDirLocation, confDir);
@@ -80,11 +85,11 @@ public class Bootstrap {
     }
 
     private static String getWebappDirLocation() {
-        final String path = Bootstrap.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        File file = new File(path);
-        String libPath = file.getParentFile().getAbsolutePath();
+        final String path = ProxyBootstrapMain.class.getProtectionDomain().getCodeSource().getLocation().getPath(); // /D:/code/bistoury/bistoury-proxy/target/classes/
+        File file = new File(path); //D:\code\bistoury\bistoury-proxy\target\classes
+        String libPath = file.getParentFile().getAbsolutePath(); // D:\code\bistoury\bistoury-proxy\target
         //如果是jar包启动，则file是jar包文件，如果是本地main方法启动，file是target目录下的classes目录
-        return FileUtil.dealPath(libPath, file.isFile() ? "../webapp/" : "webapp/");
+        return FileUtil.dealPath(libPath, file.isFile() ? "../webapp/" : "webapp/"); // D:\code\bistoury\bistoury-proxy\target\webapp
     }
 
     public static void log(final String webappDirLocation, final String confDir) {
@@ -113,7 +118,6 @@ public class Bootstrap {
                 System.getProperty("catalina.base")));
         logger.info(sm.getString("versionLoggerListener.catalina.home",
                 System.getProperty("catalina.home")));
-
         //argument
         List<String> args = ManagementFactory.getRuntimeMXBean().getInputArguments();
         for (String arg : args) {

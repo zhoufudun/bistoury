@@ -31,7 +31,7 @@ public class DumpFileCleaner {
     private static final String BASE_DUMP_DIR = BistouryStore.getDumpFileStorePath();
 
     private static final MetaStore META_STORE = MetaStores.getMetaStore();
-
+    // dump文件保存时间默认1hour
     private static final long VALIDITY_TIME = TimeUnit.HOURS.toMillis(META_STORE.getLongProperty("dump.file.validity.hour", 1));
 
     private static final String TIME_PATTERN = "yyyyMMddHHmmssSSS";
@@ -63,7 +63,7 @@ public class DumpFileCleaner {
         listeningDecorator.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                clean(file);
+                clean(file); // 1hour清理一次过期的dump文件
             }
         }, 0, 1, TimeUnit.HOURS);
     }
@@ -74,9 +74,15 @@ public class DumpFileCleaner {
         if (!file.exists() || !file.isDirectory()) {
             file.mkdirs();
         }
+        logger.info("initDumpDir, dirPath={}, dir={}",file.getAbsolutePath(),dir);
     }
 
+    /**
+     *
+     * @param file  文件目录
+     */
     public void clean(final File file) {
+        // 获取指定目录下过期文件集合
         List<File> files = FileUtil.listFile(file, new Predicate<File>() {
             @Override
             public boolean apply(File input) {
@@ -84,6 +90,7 @@ public class DumpFileCleaner {
             }
         });
         int success = 0;
+        // 过期文件全部删除
         for (File tmp : files) {
             if (tmp.delete()) {
                 success++;

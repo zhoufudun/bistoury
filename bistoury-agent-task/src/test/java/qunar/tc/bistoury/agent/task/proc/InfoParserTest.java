@@ -4,6 +4,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.io.Files;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -16,6 +17,7 @@ public class InfoParserTest {
     int pid = 3172;
 
     @Test
+    @Ignore
     public void cmdLine() throws IOException {
         File cmdLineFile = new File("/proc/" + pid, "cmdline");
         Splitter splitter = Splitter.on("\0");

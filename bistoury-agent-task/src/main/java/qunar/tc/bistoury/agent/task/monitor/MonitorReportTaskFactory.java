@@ -36,6 +36,9 @@ public class MonitorReportTaskFactory implements AgentGlobalTaskFactory {
 
     @Override
     public void start() {
+        /**
+         * 监控数据上报给kv存储系统
+         */
         TaskRunner taskRunner = new TaskRunner();
         executor.scheduleAtFixedRate(taskRunner, 0, 1, TimeUnit.MINUTES);
     }

@@ -1335,7 +1335,7 @@ $(document).ready(function () {
             }
         });
     }
-
+    // 1、初始化
     function init() {
         hidePane();
         getAppList();

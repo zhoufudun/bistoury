@@ -27,6 +27,18 @@
             <artifactId>arthas-spy</artifactId>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+            <version>1.7.26</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -47,6 +59,7 @@
                         <manifestEntries>
                             <Premain-Class>qunar.tc.bistoury.instrument.agent.AgentBootstrap2</Premain-Class>
                             <Agent-Class>qunar.tc.bistoury.instrument.agent.AgentBootstrap2</Agent-Class>
+                            <Permission>all-permissions</Permission>
                             <Can-Redefine-Classes>true</Can-Redefine-Classes>
                             <Can-Retransform-Classes>true</Can-Retransform-Classes>
                         </manifestEntries>

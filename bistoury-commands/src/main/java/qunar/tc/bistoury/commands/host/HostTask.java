@@ -63,7 +63,7 @@ public class HostTask implements Task {
 
     private final int pid;
 
-    private final ResponseHandler handler;
+    private final ResponseHandler handler; // NettyExecuteHandler
 
     private final long maxRunningMs;
 
@@ -88,7 +88,7 @@ public class HostTask implements Task {
 
     @Override
     public ContinueResponseJob createJob() {
-        return new Job();
+        return new Job(); // 返回具体的任务
     }
 
     @Override
@@ -125,7 +125,7 @@ public class HostTask implements Task {
 
         @Override
         public ListeningExecutorService getExecutor() {
-            return AgentRemotingExecutor.getExecutor();
+            return AgentRemotingExecutor.getExecutor(); //执行该任务的线程池
         }
     }
 

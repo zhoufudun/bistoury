@@ -22,6 +22,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import qunar.tc.bistoury.common.JacksonSerializer;
 import qunar.tc.bistoury.remoting.protocol.Datagram;
 import qunar.tc.bistoury.remoting.protocol.RemotingHeader;
@@ -34,6 +36,8 @@ import java.util.Map;
  */
 @ChannelHandler.Sharable
 public class AgentEncoder extends MessageToByteEncoder<Datagram> {
+
+    private static final Logger logger = LoggerFactory.getLogger(AgentEncoder.class);
 
     @Override
     protected void encode(ChannelHandlerContext ctx, Datagram msg, ByteBuf out) throws Exception {
@@ -58,6 +62,12 @@ public class AgentEncoder extends MessageToByteEncoder<Datagram> {
         out.writerIndex(end);
     }
 
+    /**
+     * 应答头编码
+     *
+     * @param header
+     * @param out
+     */
     private void encodeHeader(final RemotingHeader header, ByteBuf out) {
         //magic code 4 bytes
         out.writeInt(header.getMagicCode());
@@ -79,5 +89,6 @@ public class AgentEncoder extends MessageToByteEncoder<Datagram> {
         } else {
             out.writeShort(0);
         }
+        logger.info("code to ui is={}",header.getCode());
     }
 }

@@ -68,10 +68,16 @@ public class DefaultAgentInfoManager implements AgentInfoManager {
                 .addListener(conf -> agentConfig = conf.asMap());
     }
 
+    /**
+     * 数据库中查询最新的agent信息
+     *
+     * @param ip
+     * @return
+     */
     @Override
     public ListenableFuture<Map<String, String>> getAgentInfo(String ip) {
         SettableFuture<Map<String, String>> resultFuture = SettableFuture.create();
-        AppServer appServer = this.appServerService.getAppServerByIp(ip);
+        AppServer appServer = this.appServerService.getAppServerByIp(ip); // AppServer{serverId='bade8ba7d59b4ca0b91a044739a670aa', ip='10.2.40.18', port=8081, host='10.2.40.18', logDir='/temp/webdemo/log', room='al', appCode='bistoury_demo_app', autoJStackEnable=false, autoJMapHistoEnable=false}
         Map<String, String> agentInfo = new HashMap<>();
         if (appServer != null) {
             agentInfo.put("port", String.valueOf(appServer.getPort()));
@@ -79,11 +85,11 @@ public class DefaultAgentInfoManager implements AgentInfoManager {
             agentInfo.put("heapJMapHistoOn", String.valueOf(appServer.isAutoJMapHistoEnable()));
         }
         //这里可以覆盖所有版本配置
-        agentInfo.putAll(agentConfig);
+        agentInfo.putAll(agentConfig); //agentConfig属性来自bistoury-proxy/conf/agent_config.properties文件
 
         final int version = getVersion(ip);
         //这里可以覆盖版本低于指定版本的配置
-        agentInfoOverride.overrideAgentInfo(agentInfo, version);
+        agentInfoOverride.overrideAgentInfo(agentInfo, version); // agentInfoOverride属性来自bistoury-proxy/conf/agent_config_override.properties，他表示高版本的配置可以覆盖低版本的配置
         resultFuture.set(agentInfo);
         return resultFuture;
     }

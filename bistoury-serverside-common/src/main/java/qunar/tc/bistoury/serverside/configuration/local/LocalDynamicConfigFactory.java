@@ -30,8 +30,8 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class LocalDynamicConfigFactory implements DynamicConfigFactory<LocalDynamicConfig> {
     private final ConfigWatcher watcher = new ConfigWatcher();
-    private final ConcurrentMap<String, LocalDynamicConfig> configs = new ConcurrentHashMap<>();
-
+    private final ConcurrentMap<String, LocalDynamicConfig> configs = new ConcurrentHashMap<>(); // key=文件名字，value=配置信息缓存对象
+    // name=文件名称，例如：server.properties
     @Override
     public DynamicConfig<LocalDynamicConfig> create(final String name, final boolean failOnNotExist) {
         if (configs.containsKey(name)) {
@@ -44,9 +44,9 @@ public class LocalDynamicConfigFactory implements DynamicConfigFactory<LocalDyna
     private LocalDynamicConfig doCreate(final String name, final boolean failOnNotExist) {
         final LocalDynamicConfig prev = configs.putIfAbsent(name, new LocalDynamicConfig(name, failOnNotExist));
         final LocalDynamicConfig config = configs.get(name);
-        if (prev == null) {
+        if (prev == null) { // 第一次创建需要添加监听器
             watcher.addWatch(config);
-            config.onConfigModified();
+            config.onConfigModified(); // 触发一次用户定义的监听逻辑
         }
         return config;
     }

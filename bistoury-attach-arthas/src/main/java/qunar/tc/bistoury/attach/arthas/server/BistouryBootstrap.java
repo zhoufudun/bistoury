@@ -83,6 +83,8 @@ public class BistouryBootstrap {
     /**
      * Bootstrap bistoury server
      *
+     * 由qunar.tc.bistoury.instrument.agent.AgentBootstrap2#bind(java.lang.instrument.Instrumentation, java.lang.ClassLoader, java.lang.String) 中反射调用本bind方法
+     *
      * @param configure 配置信息
      * @throws IOException 服务器启动失败
      */
@@ -95,6 +97,15 @@ public class BistouryBootstrap {
         }
 
         try {
+            /**
+             * 涉及到各个 Client 的初始化， 将参数 instrumentation 传到各个 client 中
+             *
+             * JarDebugClient
+             * AppConfigClient
+             * QDebugClient
+             * QMonitorClient
+             * JarInfoClient
+             */
             InstrumentClientStore.init(instrumentation);
 
             ShellServerOptions options = new ShellServerOptions()
@@ -106,13 +117,22 @@ public class BistouryBootstrap {
             List<CommandResolver> resolvers = new ArrayList<CommandResolver>();
             resolvers.add(builtinCommands);
             // TODO: discover user provided command resolver
+            /**
+             * 和arthas不同，这里只支持telnet，不支持websocket
+             * telnet通讯方式注册（内存保存）
+             */
             shellServer.registerTermServer(new TelnetTermServer(
                     configure.getIp(), configure.getTelnetPort(), options.getConnectionTimeout()));
 
             for (CommandResolver resolver : resolvers) {
+                /**
+                 * 支持的指令保存在shell服务端（内存保存）
+                 */
                 shellServer.registerCommandResolver(resolver);
             }
-
+            /**
+             * 接下来启动服务器监听了，这里面用到了一个第三方框架termd（是一款优秀的命令行程序开发框架）
+             */
             shellServer.listen(new BindHandler(isBindRef));
 
             logger.info("bistoury-server listening on network={};telnet={};timeout={};", (Object) configure.getIp(),

@@ -89,9 +89,9 @@ public class SQLiteStoreImpl implements KvDb {
         }
 
         final SQLiteDeleteDataGentle sqLiteDeleteDataGentle = new SQLiteDeleteDataGentle(this);
-        sqLiteDeleteDataGentle.start();
+        sqLiteDeleteDataGentle.start(); // 开启定时扫描和删除本地（rockdb、sqlite）过期数据
 
-        Runtime.getRuntime().addShutdownHook(new Thread("sqlite resource claen") {
+        Runtime.getRuntime().addShutdownHook(new Thread("sqlite resource clean") {
             @Override
             public void run() {
                 try {

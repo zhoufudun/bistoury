@@ -22,6 +22,8 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import qunar.tc.bistoury.common.JacksonSerializer;
@@ -44,6 +46,7 @@ import java.util.Set;
  */
 @Service
 public class AgentInfoRefreshProcessor implements AgentMessageProcessor {
+    private static final Logger logger = LoggerFactory.getLogger(AgentInfoRefreshProcessor.class);
 
     @Autowired
     private AgentInfoManager agentInfoManager;
@@ -55,7 +58,7 @@ public class AgentInfoRefreshProcessor implements AgentMessageProcessor {
     public Set<Integer> codes() {
         return ImmutableSet.of(CommandCode.REQ_TYPE_REFRESH_AGENT_INFO.getCode());
     }
-
+    // 客户端10min一次向proxy请求最新的agent信息（主要是bistoury-proxy的conf/agent*开头的信息和数据库bistoury_server的表信息）
     @Override
     public void process(final ChannelHandlerContext ctx, Datagram message) {
         Metrics.counter("agent_info_refresh").inc();
@@ -68,6 +71,7 @@ public class AgentInfoRefreshProcessor implements AgentMessageProcessor {
     }
 
     private Datagram createAgentInfoResponse(Map<String, String> agentInfo) {
+        logger.info("createAgentInfoResponse success, agentInfo={}",agentInfo);
         String data = JacksonSerializer.serialize(agentInfo);
         return RemotingBuilder.buildRequestDatagram(CommandCode.REQ_TYPE_REFRESH_AGENT_INFO.getCode(), generator.generateId(), new RequestPayloadHolder(data));
     }

@@ -67,6 +67,8 @@ public class Datagram {
     public String toString() {
         return "Datagram{" +
                 "header=" + header +
+                ", body=" + body.capacity() +
+                ", holder=" + holder +
                 '}';
     }
 }

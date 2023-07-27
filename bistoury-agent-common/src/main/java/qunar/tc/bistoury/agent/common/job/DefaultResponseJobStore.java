@@ -31,7 +31,7 @@ public class DefaultResponseJobStore implements ResponseJobStore {
     @Override
     public void submit(ContinueResponseJob job) {
         PausedJob old;
-        PausedJob pausedJob;
+        PausedJob pausedJob; // DefaultResponseJobStore$PausedJob
 
         synchronized (this) {
             if (isClosed) {
@@ -40,12 +40,12 @@ public class DefaultResponseJobStore implements ResponseJobStore {
             }
 
             pausedJob = new PausedJob(job);
-            old = jobs.putIfAbsent(pausedJob.getId(), pausedJob);
+            old = jobs.putIfAbsent(pausedJob.getId(), pausedJob); // 可暂停的任务先缓存
         }
 
-        if (old == null) {
+        if (old == null) { // 任务保存成功
             logger.info("submit job {}", pausedJob.getId());
-            pausedJob.start();
+            pausedJob.start(); // 执行
         }
     }
 
@@ -108,6 +108,9 @@ public class DefaultResponseJobStore implements ResponseJobStore {
         }
     }
 
+    /**
+     * 一种可以暂停的任务，例如刷新主机基础信息
+     */
     private class PausedJob {
 
         private final ContinueResponseJob job;
@@ -122,7 +125,7 @@ public class DefaultResponseJobStore implements ResponseJobStore {
 
         private PausedJob(ContinueResponseJob job) {
             this.job = new WrappedJob(job);
-            this.executor = job.getExecutor();
+            this.executor = job.getExecutor(); // 由具体的任务决定，例如HostTask任务
         }
 
         public String getId() {
@@ -137,7 +140,7 @@ public class DefaultResponseJobStore implements ResponseJobStore {
             if (stopped) {
                 return;
             }
-
+            // com.google.common.util.concurrent.TrustedListenableFutureTask@5dc9670b (delegate = java.util.concurrent.Executors$RunnableAdapter@5a7c3d9c)
             this.finishFuture = executor.submit(new JobRunner(this));
         }
 
@@ -227,7 +230,7 @@ public class DefaultResponseJobStore implements ResponseJobStore {
             jobs.remove(getId());
         }
     }
-
+    // job 真正执行者
     private class JobRunner implements Runnable {
 
         private final PausedJob job;
@@ -259,7 +262,7 @@ public class DefaultResponseJobStore implements ResponseJobStore {
                     return;
                 }
 
-                boolean end = job.doResponse();
+                boolean end = job.doResponse(); // end表示，这个任务是否结束
                 if (end) {
                     job.finish();
                     return;
@@ -277,7 +280,7 @@ public class DefaultResponseJobStore implements ResponseJobStore {
         private boolean clear = false;
 
         public WrappedJob(ContinueResponseJob delegate) {
-            this.delegate = delegate;
+            this.delegate = delegate; //HostTask
         }
 
         @Override

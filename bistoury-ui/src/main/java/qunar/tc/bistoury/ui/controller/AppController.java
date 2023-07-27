@@ -17,6 +17,8 @@
 
 package qunar.tc.bistoury.ui.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +36,8 @@ import qunar.tc.bistoury.ui.service.UserService;
 
 @Controller
 public class AppController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AppController.class);
 
     private static final int ADMIN_PAGE_SIZE = 20;
 
@@ -54,6 +58,8 @@ public class AppController {
     public ApiResult getApps() {
         try {
             final String userName = LoginContext.getLoginContext().getLoginUser();
+            ApiResult success = ResultHelper.success(appService.getApps(userName));
+            logger.info("getApps result="+success);
             return ResultHelper.success(appService.getApps(userName));
         } catch (Exception e) {
             return ResultHelper.fail(-1, "获取应用列表失败");
@@ -77,7 +83,7 @@ public class AppController {
             return ResultHelper.fail(ApiStatus.PERMISSION_DENY.getCode(), ApiStatus.PERMISSION_DENY.getMsg());
         }
     }
-
+    // demo: http://10.2.40.18:9091/getHosts.do?appCode=bistoury_demo_app
     @RequestMapping("getHosts")
     @ResponseBody
     public ApiResult getHosts(@RequestParam(name = "appCode") String appCode) {
