@@ -65,6 +65,8 @@ public class PidUtils {
                 return Integer.compare(o1.priority(), o2.priority());
             }
         });
+
+        logger.info("handlers="+handlers);
         return ImmutableList.copyOf(handlers);
     }
 

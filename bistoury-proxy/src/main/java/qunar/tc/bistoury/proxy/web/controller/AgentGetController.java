@@ -42,7 +42,7 @@ public class AgentGetController {
 
     @ResponseBody
     @RequestMapping("/proxy/agent/get")
-    public ApiResult getAgentInfo(@RequestParam final String ip) {
+    public ApiResult  getAgentInfo(@RequestParam final String ip) {
         if (Strings.isNullOrEmpty(ip)) {
             return ResultHelper.fail(-1, "argument error", null);
         }

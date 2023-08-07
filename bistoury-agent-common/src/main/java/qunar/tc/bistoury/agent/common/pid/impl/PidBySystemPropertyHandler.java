@@ -17,6 +17,8 @@
 
 package qunar.tc.bistoury.agent.common.pid.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import qunar.tc.bistoury.agent.common.pid.PidHandler;
 
 /**
@@ -25,6 +27,7 @@ import qunar.tc.bistoury.agent.common.pid.PidHandler;
  * @describe
  */
 public class PidBySystemPropertyHandler extends AbstractPidHandler implements PidHandler {
+    private static final Logger logger = LoggerFactory.getLogger(PidByJpsHandler.class);
 
     @Override
     public int priority() {
@@ -33,6 +36,7 @@ public class PidBySystemPropertyHandler extends AbstractPidHandler implements Pi
     // win环境下无法执行ps执行，因此，这里可以提前设置好需要监控的程序的pid，方便本地测试
     @Override
     protected int doGetPid() {
+        logger.info("qunar.tc.bistoury.agent.common.pid.impl.PidBySystemPropertyHandler.doGetPid");
         return Integer.valueOf(System.getProperty("bistoury.user.pid", "-1"));
     }
 

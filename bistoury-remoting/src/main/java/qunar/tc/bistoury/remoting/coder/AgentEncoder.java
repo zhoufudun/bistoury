@@ -89,6 +89,6 @@ public class AgentEncoder extends MessageToByteEncoder<Datagram> {
         } else {
             out.writeShort(0);
         }
-        logger.info("code to ui is={}",header.getCode());
+//        logger.info("code to ui is={}, header.getProperties()={}",header.getCode(),header.getProperties());
     }
 }

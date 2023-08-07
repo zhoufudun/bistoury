@@ -51,6 +51,7 @@ public class PidByJpsHandler extends AbstractPidHandler implements PidHandler {
 
     @Override
     protected int doGetPid() {
+        logger.info("qunar.tc.bistoury.agent.common.pid.impl.PidByJpsHandler.doGetPid");
         Res<List<String>> res = getJpsInfo();
         if (res.getCode() == 0) {
             ArrayListMultimap<String, JpsInfo> multimap = parseJpsInfo(res.getData());

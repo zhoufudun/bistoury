@@ -17,8 +17,8 @@
 
 package qunar.tc.bistoury.instrument.agent;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URL;
@@ -32,7 +32,7 @@ import java.util.Set;
  * @author zhenyu.nie created on 2018 2018/11/19 19:45
  */
 public class BistouryClassloader extends URLClassLoader {
-    private static final Logger logger = LoggerFactory.getLogger(AgentBootstrap2.class);
+//    private static final Logger logger = LoggerFactory.getLogger(AgentBootstrap2.class);
     private ClassLoader magicClassLoader;
 
 
@@ -67,7 +67,7 @@ public class BistouryClassloader extends URLClassLoader {
         // 从自定义的类集合中中类名
         Class<?> magicClass = loadFromMagic(name);
         if (magicClass != null) {
-            logger.info("BistouryClassloader loadClass magicClass name={}, resolve={}", name ,resolve);
+            System.out.println("BistouryClassloader loadClass magicClass name={"+name+"}, resolve={"+resolve+"}");
             return getResolvedClass(magicClass, resolve);
         }
 

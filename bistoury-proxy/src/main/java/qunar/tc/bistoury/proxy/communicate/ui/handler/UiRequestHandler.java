@@ -93,6 +93,7 @@ public class UiRequestHandler extends ChannelDuplexHandler {
         }
 
         logger.info("communicateCommand="+communicateCommand.get());
+        logger.info("response="+datagram.toString());
         Datagram response = communicateCommand.get().getProcessor().prepareResponse(datagram);
         super.write(ctx, response, promise);
     }

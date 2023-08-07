@@ -28,6 +28,9 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * @author zhenyu.nie created on 2018 2018/11/19 19:12
@@ -134,6 +137,8 @@ public class ArthasStarter {
         String property = System.getProperty("os.name");
         if(property.startsWith("Window")){
             // window平台下调试，需要指定用户进程的lib位置, 参数内容根据自己的用户进程自己设置
+//            org.springframework.web.servlet.DispatcherServlet
+//            System.setProperty("bistoury.app.lib.class", "org.springframework.web.servlet.DispatcherServlet");
             System.setProperty("bistoury.app.lib.class", "com.example.webdemo.WebdemoApplication");
         }
 
@@ -146,6 +151,15 @@ public class ArthasStarter {
         configure.setHttpPort(TelnetConstants.DEFAULT_HTTP_PORT);
         logger.info("Configure, pid={}, arthasAgent={}, arthasCore={}. telentIp={}, telentPort={}. httpPort={}",
                 configure.getJavaPid(),configure.getArthasAgent(),configure.getArthasCore(),configure.getIp(),configure.getTelnetPort(),configure.getHttpPort());
+        logger.info("print all SystemProperties");
+        Set<String> strings = System.getProperties().stringPropertyNames();
+        strings.stream().forEach(new Consumer<String>() {
+            @Override
+            public void accept(String s) {
+                logger.info("key={}, value={}",s,System.getProperty(s));
+            }
+        });
+
         return configure;
     }
 }

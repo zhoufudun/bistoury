@@ -17,8 +17,8 @@
 
 package qunar.tc.bistoury.instrument.agent;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import qunar.tc.bistoury.instrument.spy.BistourySpys1;
 
 //import java.arthas.Spy;
@@ -40,7 +40,7 @@ import java.util.jar.JarFile;
  * @author zhenyu.nie created on 2018 2018/11/19 19:39
  */
 public class AgentBootstrap2 {
-    private static final Logger logger = LoggerFactory.getLogger(AgentBootstrap2.class);
+//    private static final Logger logger = LoggerFactory.getLogger(AgentBootstrap2.class);
 
     private static final String ADVICEWEAVER = "com.taobao.arthas.core.advisor.AdviceWeaver";
     private static final String ON_BEFORE = "methodOnBegin";
@@ -129,13 +129,13 @@ public class AgentBootstrap2 {
         if (bistouryClassLoader == null) {
             File dir = agentJar.getParentFile();
             File[] jars = getNonSpyJarFiles(dir, spyJarFiles);
-            logger.info("agentJar.getParentFile()=" + dir.getAbsolutePath());
+            System.out.println("agentJar.getParentFile()=" + dir.getAbsolutePath());
             URL[] urls = new URL[jars.length];
             for (int i = 0; i < jars.length; ++i) {
                 urls[i] = jars[i].toURI().toURL();
             }
             ps.println("bistoury classloader urls, " + Arrays.toString(urls));
-            logger.info("abistoury classloader urls=" + Arrays.toString(urls));
+            System.out.println("abistoury classloader urls=" + Arrays.toString(urls));
             bistouryClassLoader = new BistouryClassloader(urls, findUserClassLoader(inst, libClass));
             initMagic((BistouryClassloader) bistouryClassLoader, dir);
         }
@@ -144,7 +144,7 @@ public class AgentBootstrap2 {
 
     private static ClassLoader findUserClassLoader(Instrumentation inst, final String libClass) {
         ClassLoader userClassLoader = findLibClass(inst, libClass).getClassLoader();
-        logger.info("userClassLoader={}",userClassLoader);
+        System.out.println("userClassLoader="+userClassLoader);
         return userClassLoader;
     }
 
@@ -263,8 +263,7 @@ public class AgentBootstrap2 {
              * D:\maven\repository\com\taobao\arthas\arthas-core\3.1.4\arthas-core.jar$|$;;;telnetPort=3668;httpPort=-1;ip=127.0.0.1;arthasAgent=D:\\maven\\repository\\com\\taobao\\arthas\\arthas-core\\3.1.4\\bistoury-instrument-agent.jar;sessionTimeout=1800;arthasCore=D:\\maven\\repository\\com\\taobao\\arthas\\arthas-core\\3.1.4\\arthas-core.jar;javaPid=16456;$|$null
              */
 
-
-            logger.info("bistoury server agent start...");
+            System.out.println("bistoury server agent start...");
 
             String[] argsArr = args.split(DELIMITER); //  virtualMachine.loadAgent(agentFile,args);
 
@@ -273,7 +272,9 @@ public class AgentBootstrap2 {
             final String agentArgs = argsArr[1];
             final String libClass = argsArr[2];
 
-            logger.info("agentJar={}, arentArgs={}, libClass={}",agentJar,agentArgs,libClass);
+            System.out.println("agentJar="+agentJar);
+            System.out.println("arentArgs="+agentArgs);
+            System.out.println("libClass="+libClass);
 
             System.setProperty("bistoury.app.lib.class", libClass);
 
@@ -321,7 +322,8 @@ public class AgentBootstrap2 {
 
     private static File getJarFile(File dir, String name) {
         final String prefix = name.substring(0, name.indexOf('.'));
-        logger.info("dir={}, name={}",dir.getAbsolutePath(),name);
+        System.out.println("dir="+dir.getAbsolutePath());
+        System.out.println("name="+name);
         File[] files = dir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
@@ -351,21 +353,17 @@ public class AgentBootstrap2 {
         if (!isBind) {
             try {
                 ps.println("bistoury start to bind...");
-                logger.info("bistoury start to bind...");
                 /**
                  * 调用qunar.tc.bistoury.attach.arthas.server.BistouryBootstrap#bind(com.taobao.arthas.core.config.Configure)
                  */
                 bootstrapClass.getMethod(BIND, classOfConfigure).invoke(bootstrap, configure);
                 ps.println("bistoury server bind success.");
-                logger.info("bistoury server bind success.");
                 return;
             } catch (Exception e) {
                 ps.println("bistoury server port binding failed! Please check $HOME/logs/arthas/arthas.log for more details.");
-                logger.error("bistoury server port binding failed! Please check $HOME/logs/arthas/arthas.log for more details.");
                 throw e;
             }
         }
         ps.println("Bistoury server already bind.");
-        logger.info("Bistoury server already bind.");
     }
 }

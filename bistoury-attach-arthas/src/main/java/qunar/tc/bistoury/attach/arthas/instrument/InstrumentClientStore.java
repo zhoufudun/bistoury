@@ -59,7 +59,7 @@ public class InstrumentClientStore {
         }
 
         init = true;
-
+        // 用户进程的所有类
         AppLibClassSupplier appLibClassSupplier = new AppLibClassSupplier() {
             private final Supplier<Class<?>> memoize = Suppliers.memoize(new DefaultAppLibClassSupplier(instrumentation));
 

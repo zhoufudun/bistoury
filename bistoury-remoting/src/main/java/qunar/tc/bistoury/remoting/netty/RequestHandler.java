@@ -100,6 +100,8 @@ public class RequestHandler extends ChannelInboundHandlerAdapter {
 
         Class<?> commandType = codeTypeMappingStore.getMappingType(code);
 
+        logger.info("code={}, processor={}",code,processor);
         processor.process(header, commandType.cast(CommandSerializer.deserializeCommand(command, commandType)), handler);
+
     }
 }

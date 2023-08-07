@@ -37,7 +37,7 @@ public class HeapHistoDumpTaskFactory implements AgentGlobalTaskFactory {
     public void start() {
         TaskRunner taskRunner = new TaskRunner();
         /**
-         * 一份执行一次执行Heap，保存到sqlite、rockdb等k-v存储中间件
+         * 1min执行一次执行Heap，保存到sqlite、rockdb等k-v存储中间件
          */
         executor.scheduleAtFixedRate(taskRunner, 0, 1, TimeUnit.MINUTES);
     }

@@ -24,6 +24,7 @@ import qunar.tc.bistoury.attach.file.JarStorePathUtil;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -41,12 +42,16 @@ public class DefaultAppClassPathSupplier implements AppClassPathSupplier {
                 .getProtectionDomain()
                 .getCodeSource()
                 .getLocation();
+        System.out.println("DefaultAppClassPathSupplier appLibClass="+appLibClass);
+        System.out.println("DefaultAppClassPathSupplier appLibClass url="+url.getPath());
 
-        //调用该方法触发解压
+        //调用该方法触发解压：
         FileOperateFactory.replaceJarWithUnPackDir(url.toString());
 
         String libJarPath = url.getPath();
         String appLibPath = new File(libJarPath).getParentFile().getAbsolutePath();
+
+        System.out.println("appLibPath="+appLibPath);
 
         String appSourcePath = System.getProperty("bistoury.app.classes.path");
         if (!Strings.isNullOrEmpty(appSourcePath)) {
@@ -55,12 +60,17 @@ public class DefaultAppClassPathSupplier implements AppClassPathSupplier {
             String jarSourcePath = JarStorePathUtil.getJarSourcePath();
             ImmutableList<String> list = ImmutableList.of(appLibPath, appSourcePath, jarLibPath, jarSourcePath);
             supplier = new SettableAppClassPathSupplier(list);
+            System.out.println("jarLibPath="+ jarLibPath);
+            System.out.println("jarSourcePath="+ jarSourcePath);
+            System.out.println("appSourcePath="+ appSourcePath);
         } else {
             Iterator<AppClassPathSupplierFactory> factoryIterator = ServiceLoader.load(AppClassPathSupplierFactory.class).iterator();
             if (factoryIterator.hasNext()) {
                 supplier = factoryIterator.next().create(appLibPath);
+                System.out.println("supplier 70="+ supplier);
             } else {
                 supplier = new WebAppClassPathSupplier(appLibPath);
+                System.out.println("supplier 73=="+ supplier);
             }
         }
     }
